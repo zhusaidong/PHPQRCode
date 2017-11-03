@@ -1,0 +1,13 @@
+{
+    "name": "zhusaidong/php-qrcode",
+    "description": "qrcode for php",
+    "type": "project",
+    "license": "BSD",
+    "authors": [
+        {
+            "name": "zhusaidong",
+            "email": "zhusaidong@gmail.com"
+        }
+    ],
+    "require": {}
+}
