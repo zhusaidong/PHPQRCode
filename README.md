@@ -1,0 +1,2 @@
+# PHPQRCode
+QRCode for PHP
