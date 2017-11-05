@@ -9,34 +9,54 @@ namespace PHPQRCode;
 
 class QRCodeMask
 {
-	private $masks = [];
-	private $qrImages = [];
-	public $minMask = 0;
+	private $qrCodeImages = [];
 	public function __construct()
 	{
 	}
-	public function setQRImage(QRCodeImage $qrImage)
+	public function setQRCodeImage(QRCodeImageGenerate $qrCodeImage)
 	{
+		$qrCodeImageTotals = [];
 		for($k = 0; $k < 8; $k++)
 		{
-			$image = $qrImage->toArray();
-			$image1 = $qrImage->getQRImage();
+			$_temp = $qrCodeImage;
+			$image = $_temp->getQRCodeImage();
 			for($i = 0; $i < count($image); $i++)
 			{
 				for($j = 0; $j < count($image[$i]); $j++)
 				{
-					$image[$i][$j] = $this->mode($k,$i,$j,$image[$i][$j]);
+					$_image = $image[$i][$j];
+					if($_image['type'] == QRCodeImageType::DATA)
+					{
+						$_temp->mergeByCoordinate($this->mode($k,$i,$j,$_image['bit']),$_image['point']);
+					}
 				}
 			}
-			$qi = new QRCodeImage;
-			$qi->createQRImageBySquareLength(count($image));
-			$this->qrImages[$k] = $qi->merge($image);
+			
+			$qrCodeImageTotals[$k] = 0;
+			for($i = 0; $i < 4; $i++)
+			{
+				$qrCodeImageTotals[$k] += call_user_func_array([$this,'scoringRules_'.$i],[$_temp]);
+			}
 		}
-	}
-	//取最小的掩码模式
-	public function getQRImage()
-	{
-		return $this->qrImages[$this->minMask];
+		
+		$minMask = array_search(min($qrCodeImageTotals),$qrCodeImageTotals);
+		
+		$image = $qrCodeImage->getQRCodeImage();
+		for($i = 0; $i < count($image); $i++)
+		{
+			for($j = 0; $j < count($image[$i]); $j++)
+			{
+				$_image = $image[$i][$j];
+				if($_image['type'] == QRCodeImageType::DATA)
+				{
+					$qrCodeImage->mergeByCoordinate($this->mode($minMask,$i,$j,$_image['bit']),$_image['point']);
+				}
+			}
+		}
+		return [
+			'mask'		 =>$minMask,
+			'qrCodeImage'=>$qrCodeImage,
+		];
 	}
 	//8种掩码模式
 	public function mode($mode = 0,$i,$j,$value)
@@ -76,9 +96,152 @@ class QRCodeMask
 		}
 		return $value;
 	}
+	
 	//4种评分规则
-	public function scoringRules_0()
+	public function scoringRules_0(QRCodeImageGenerate $qrCodeImage)
 	{
+		$qrCodeImageArray = $qrCodeImage->toArray();
+		$total = 0;
+		foreach($qrCodeImageArray as $value)
+		{
+			$values = implode('',$value);
+			$index_1 = strpos($values,'11111');
+			$index_0 = strpos($values,'00000');
+			if($index_1 !== FALSE)
+			{
+				$index_1 += 5;
+				while(isset($values[$index_1 + 1]) and $values[$index_1 + 1] === 0)
+				{
+					$index_1++;
+				}
+				$index_1 -= 2;
+				$total += $index_1;
+			}
+			if($index_0 !== FALSE)
+			{
+				$index_0 += 5;
+				while(isset($values[$index_0 + 1]) and $values[$index_0 + 1] === 0)
+				{
+					$index_0++;
+				}
+				$index_0 -= 2;
+				$total += $index_0;
+			}
+		}
+		foreach($qrCodeImageArray as $key => $value)
+		{
+			$values = '';
+			foreach($qrCodeImageArray as $k => $v)
+			{
+				$values .= $v[$key];
+			}
+			$index_1 = strpos($values,'11111');
+			$index_0 = strpos($values,'00000');
+			if($index_1 !== FALSE)
+			{
+				$index_1 += 5;
+				while(isset($values[$index_1 + 1]) and $values[$index_1 + 1] === 0)
+				{
+					$index_1++;
+				}
+				$index_1 -= 2;
+				$total += $index_1;
+			}
+			if($index_0 !== FALSE)
+			{
+				$index_0 += 5;
+				while(isset($values[$index_0 + 1]) and $values[$index_0 + 1] === 0)
+				{
+					$index_0++;
+				}
+				$index_0 -= 2;
+				$total += $index_0;
+			}
+		}
+		return $total;
+	}
+	public function scoringRules_1(QRCodeImageGenerate $qrCodeImage)
+	{
+		$arr = $qrCodeImage->toArray();
+		$total = 0;
+		for($i = 0; $i < count($arr); $i++)
+		{
+			for($j = 0; $j < count($arr); $j++)
+			{
+				if((
+					isset($arr[$i][$j]) and $arr[$i][$j] === 1 and 
+					isset($arr[$i + 1][$j]) and $arr[$i + 1][$j] === 1 and 
+					isset($arr[$i][$j + 1]) and $arr[$i][$j + 1] === 1 and 
+					isset($arr[$i + 1][$j + 1]) and $arr[$i + 1][$j + 1] === 1
+				) or (
+					isset($arr[$i][$j]) and $arr[$i][$j] === 0 and 
+					isset($arr[$i + 1][$j]) and $arr[$i + 1][$j] === 0 and 
+					isset($arr[$i][$j + 1]) and $arr[$i][$j + 1] === 0 and 
+					isset($arr[$i + 1][$j + 1]) and $arr[$i + 1][$j + 1] === 0
+				))
+				{
+					$total++;
+				}
+			}
+		}
+		return $total * 3;
+	}
+	public function scoringRules_2(QRCodeImageGenerate $qrCodeImage)
+	{
+		$qrCodeImageArray = $qrCodeImage->toArray();
+		$total = 0;
+		foreach($qrCodeImageArray as $value)
+		{
+			$values = implode('',$value);
+			$index_1 = strpos($values,'10111010000');
+			if($index_1 !== FALSE)
+			{
+				$total++;
+			}
+			$index_0 = strpos($values,'00001011101');
+			if($index_0 !== FALSE)
+			{
+				$total++;
+			}
+		}
+		foreach($qrCodeImageArray as $key => $value)
+		{
+			$values = '';
+			foreach($qrCodeImageArray as $k => $v)
+			{
+				$values .= $v[$key];
+			}
+			$index_1 = strpos($values,'10111010000');
+			if($index_1 !== FALSE)
+			{
+				$total++;
+			}
+			$index_0 = strpos($values,'00001011101');
+			if($index_0 !== FALSE)
+			{
+				$total++;
+			}
+		}
+		return $total * 40;
+	}
+	public function scoringRules_3(QRCodeImageGenerate $qrCodeImage)
+	{
+		$qrCodeImageArray = $qrCodeImage->toArray();
+		$total = 0;
 		
+		$values = '';
+		foreach($qrCodeImageArray as $key => $value)
+		{
+			$values .= implode('',$value);
+		}
+		
+		$darkModuleNumber = substr_count($values,'1');
+		$lightModuleNumber= substr_count($values,'0');
+		
+		$percent = round($darkModuleNumber / ($lightModuleNumber + $darkModuleNumber),2) * 100;
+		$mod = ceil($percent / 5);
+		$total = min(abs($mod * 5 - 50) / 5,abs(($mod + 1) * 5 - 50) / 5) * 10;
+		
+		return $total;
 	}
 }

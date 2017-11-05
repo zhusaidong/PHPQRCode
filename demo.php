@@ -10,4 +10,4 @@ use PHPQRCode\PHPQRCode;
 use PHPQRCode\ErrorCorrectCode;
 
 $PHPQRCode = new PHPQRCode;
-echo $PHPQRCode->createQRCode('HELLO WORLD',ErrorCorrectCode::M);
+echo $PHPQRCode->createQRCode('HELLO WORLD',ErrorCorrectCode::Q);

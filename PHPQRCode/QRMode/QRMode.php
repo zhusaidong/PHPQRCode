@@ -26,6 +26,25 @@ class QRMode
 		$this->maxBitLength = $maxBitLength;
 	}
 	/**
+	* 二进制转十进制数字
+	*/
+	public function Binary2Number($binary)
+	{
+		if(is_array($binary))
+		{
+			foreach($binary as $key => $value)
+			{
+				$binary[$key] = $this->Binary2Number($value);
+			}
+		}
+		else
+		{
+			$binary = base_convert($binary,2,10);
+		}
+		return $binary;
+	}
+	
+	/**
 	* 是否是数字
 	*/
 	public static function isNumber($text)
@@ -59,23 +78,5 @@ class QRMode
 	public static function isBinary($text)
 	{
 		return !preg_match('/[^01]+/',$text);
-	}
-	/**
-	* 二进制转十进制数字
-	*/
-	public function Binary2Number($binary)
-	{
-		if(is_array($binary))
-		{
-			foreach($binary as $key => $value)
-			{
-				$binary[$key] = $this->Binary2Number($value);
-			}
-		}
-		else
-		{
-			$binary = base_convert($binary,2,10);
-		}
-		return $binary;
 	}
 }

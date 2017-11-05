@@ -40,8 +40,6 @@ class PHPQRCode
 		
 		//数据分析
 		$qrMode = $qrCodeGenerate->DataAnalysis();
-		//匹配二维码version
-		$qrCodeGenerate->getVersion($qrMode);
 		//数据编码
 		$qrCodeGenerate->DataEncodation($qrMode);
 		//纠错编码
