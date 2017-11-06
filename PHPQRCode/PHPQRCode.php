@@ -55,6 +55,8 @@ class PHPQRCode
 		
 		$qrCode = $qrCodeGenerate->toQRCode();
 		echo $qrCode;
+		
+		unset($qrCodeObject,$qrMode);
 	}
 	
 	/**

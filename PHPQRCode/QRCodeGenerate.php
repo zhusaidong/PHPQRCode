@@ -242,7 +242,7 @@ class QRCodeGenerate
 	*/
 	private function DataInMatrix(QRCodeImageGenerate $qrCodeImage)
 	{
-		$finalBits = str_split($this->qrCodeObject->finalBits,1);
+		$finalBits = $this->qrCodeObject->finalBits;
 		$bitIndex = 0;
 		
 		$qrImage = $qrCodeImage->getQRCodeImage();
@@ -254,7 +254,7 @@ class QRCodeGenerate
 		//$mask = new QRCodeMask;
 		
 		$dir_up = TRUE;
-		for($i = 0; $i < count($finalBits); $i++)
+		for($i = 0; $i < strlen($finalBits); $i++)
 		{
 			//*/
 			$bit1 = $finalBits[$i];
@@ -347,43 +347,33 @@ class QRCodeGenerate
 	{
 		$version = $this->qrCodeObject->version;
 		
-		$maskFormat = $maskInfo['mask'];
 		$image = $maskInfo['qrCodeImage'];
 		
 		$qrImageLength = $image->getQRCodeImageLength();
 		//保留版本信息区:二维码版本7以上包含两个版本信息
 		if($version >= 7)
 		{
-			$versionInformation = new VersionInformation;
-			$versionInfo = $versionInformation->getVersionInformation($version);
+			$versionInfo = (new VersionInformation)->getVersionInformation($version);
 			
 			$image->merge($image->qrcodeVersionInfomation($versionInfo,QRCodeImageGenerate::VERSION_INFOMATION_DIR_DOWN),new Point(0,$qrImageLength - 7 - 1 - 3));
 			$image->merge($image->qrcodeVersionInfomation($versionInfo,QRCodeImageGenerate::VERSION_INFOMATION_DIR_UP),new Point($qrImageLength - 7 - 1 - 3,0));
 		}
 		
 		//保留格式信息区
-		$formatInformation = $this->getFormatInformation($maskFormat);
+		$formatInfo = (new FormatInformation)->getFormatInformation($this->qrCodeObject->errorCorrectCode,$maskInfo['mask']);
 		
-		$image->merge($image->qrcodeFormatInfomation($formatInformation,QRCodeImageGenerate::FORMAT_INFOMATION_DIR_UP),new Point(0,8));
-		$image->merge($image->qrcodeFormatInfomation($formatInformation,QRCodeImageGenerate::FORMAT_INFOMATION_DIR_DOWN),new Point($qrImageLength - 8 + 1,8));
-		$image->merge($image->qrcodeFormatInfomation($formatInformation,QRCodeImageGenerate::FORMAT_INFOMATION_DIR_LEFT),new Point(8,0));
-		$image->merge($image->qrcodeFormatInfomation($formatInformation,QRCodeImageGenerate::FORMAT_INFOMATION_DIR_RIGHT),new Point(8,$qrImageLength - 8));
+		$image->merge($image->qrcodeFormatInfomation($formatInfo,QRCodeImageGenerate::FORMAT_INFOMATION_DIR_UP),new Point(0,8));
+		$image->merge($image->qrcodeFormatInfomation($formatInfo,QRCodeImageGenerate::FORMAT_INFOMATION_DIR_DOWN),new Point($qrImageLength - 8 + 1,8));
+		$image->merge($image->qrcodeFormatInfomation($formatInfo,QRCodeImageGenerate::FORMAT_INFOMATION_DIR_LEFT),new Point(8,0));
+		$image->merge($image->qrcodeFormatInfomation($formatInfo,QRCodeImageGenerate::FORMAT_INFOMATION_DIR_RIGHT),new Point(8,$qrImageLength - 8));
 		
 		//二维码周围添加2格空白
 		$whiteImage = new QRCodeImageGenerate($version);
-		$whiteImage->createQRCodeImageByLength($whiteImage->getQRCodeImageLength() + 4);
-		$whiteImage->merge($image->toArray(),new Point(2,2));
+		$whiteImage->createQRCodeImageByLength($whiteImage->getQRCodeImageLength() + 8);
+		$whiteImage->merge($image->toArray(),new Point(4,4));
 		
 		$this->qrCodeObject->qrCodeImage = $whiteImage;
 		unset($whiteImage,$image);
-	}
-	
-	//计算格式信息,文档:http://tiierr.xyz/2017/02/28/%E4%BA%8C%E7%BB%B4%E7%A0%81-%E6%A0%BC%E5%BC%8F%E5%92%8C%E7%89%88%E6%9C%AC%E4%BF%A1%E6%81%AF/
-	private function getFormatInformation($maskFormat)
-	{
-		$formatInformation = new FormatInformation;
-		$formatInfo = $formatInformation->getFormatInformation($this->qrCodeObject->errorCorrectCode,$maskFormat);
-		return $formatInfo;
 	}
 	
 	/**

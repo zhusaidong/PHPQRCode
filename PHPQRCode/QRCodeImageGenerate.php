@@ -138,6 +138,7 @@ class QRCodeImageGenerate
 	*/
 	public function qrcodeFormatInfomation($formatInfomation,$formatInfomationDir = QRCodeImageGenerate::FORMAT_INFOMATION_DIR_UP)
 	{
+		$formatInfomation = strrev($formatInfomation);
 		$formatInfomation_before = substr($formatInfomation,0,8);
 		$formatInfomation_after = substr($formatInfomation,8,strlen($formatInfomation));
 		
@@ -294,8 +295,8 @@ class QRCodeImageGenerate
 		if($version >= 7)
 		{
 			$versionInfo = '000000000000000000';
-			$this->merge($this->qrcodeVersionInfomation($versionInfo,QRCodeImageGenerate::VERSION_INFOMATION_DIR_DOWN),new Point(0,$qrImageLength - 7 - 1 - 3),QRCodeImageType::VERSION_INFOMATION);
-			$this->merge($this->qrcodeVersionInfomation($versionInfo,QRCodeImageGenerate::VERSION_INFOMATION_DIR_UP),new Point($qrImageLength - 7 - 1 - 3,0),QRCodeImageType::VERSION_INFOMATION);
+			$this->merge($this->qrcodeVersionInfomation($versionInfo,QRCodeImageGenerate::VERSION_INFOMATION_DIR_DOWN),new Point(0,$this->qrCodeImageLength - 7 - 1 - 3),QRCodeImageType::VERSION_INFOMATION);
+			$this->merge($this->qrcodeVersionInfomation($versionInfo,QRCodeImageGenerate::VERSION_INFOMATION_DIR_UP),new Point($this->qrCodeImageLength - 7 - 1 - 3,0),QRCodeImageType::VERSION_INFOMATION);
 		}
 		
 		//保留格式信息区
