@@ -8,6 +8,9 @@ require_once('./PHPQRCode/PHPQRCode.php');
 
 use PHPQRCode\PHPQRCode;
 use PHPQRCode\ErrorCorrectCode;
+use PHPQRCode\QRCodeImageAdvanced;
 
-$PHPQRCode = new PHPQRCode;
-echo $PHPQRCode->createQRCode('HELLO WORLD',ErrorCorrectCode::Q);
+(new PHPQRCode)
+	->createQRCode('HELLO WORLD',ErrorCorrectCode::Q)
+	//->setSize(10)
+	->toPng();

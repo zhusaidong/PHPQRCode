@@ -43,6 +43,36 @@ class QRMode
 		}
 		return $binary;
 	}
+	/**
+	* get mode
+	* @param string $text
+	* 
+	* @return QRMode
+	*/
+	public function getMode($text)
+	{
+		$qrMode = null;
+		switch($text)
+		{
+			case QRMode::isBinary($text):
+				$qrMode = new Binary();
+				break;
+			case QRMode::isNumber($text):
+				$qrMode = new Number();
+				break;
+			case QRMode::isLetter($text):
+				$qrMode = new Letter();
+				break;
+			case QRMode::isChinese($text):
+				$qrMode = new Chinese();
+				break;
+			case QRMode::isMix($text):
+				$qrMode = new Mix();
+				break;
+		}
+		$qrMode->setData($text);
+		return $qrMode;
+	}
 	
 	/**
 	* 是否是数字

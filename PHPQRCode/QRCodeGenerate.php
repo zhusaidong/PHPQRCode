@@ -42,43 +42,18 @@ class QRCodeGenerate
 	*/
 	public function DataAnalysis()
 	{
-		//区分内容类型,不同类型处理方式不同
-		$data = $this->qrCodeObject->content;
-		$qrMode = null;
-		switch($data)
-		{
-			case QRMode::isBinary($data):
-				$qrMode = new Binary();
-				break;
-			case QRMode::isNumber($data):
-				$qrMode = new Number();
-				break;
-			case QRMode::isLetter($data):
-				$qrMode = new Letter();
-				break;
-			case QRMode::isChinese($data):
-				$qrMode = new Chinese();
-				break;
-			case QRMode::isMix($data):
-				$qrMode = new Mix();
-				break;
-		}
-		$qrMode->setData($data);
-		
+		$qrModeInfo = (new QRMode)->getMode($this->qrCodeObject->content);
 		//根据数据容量获取二维码版本
-		$dataCapacity = new DataCapacity;
-		$this->qrCodeObject->version = $dataCapacity->getVersion(strlen($data),$this->qrCodeObject->errorCorrectCode,$qrMode->name);
-		
-		return $qrMode;
+		$this->qrCodeObject->version = (new DataCapacity)->getVersion(strlen($this->qrCodeObject->content),$this->qrCodeObject->errorCorrectCode,$qrModeInfo->name);
+		return $qrModeInfo;
 	}
 	/**
 	* Step 2 Data encodation 数据编码
 	*/
-	public function DataEncodation(QRMode $qrMode)
+	public function DataEncodation(QRMode $qrModeInfo)
 	{
-		$errorCorrectionCode = new ErrorCorrectionCode;
-		$qrMode->setMaxBitLength($errorCorrectionCode->getDataCodeNumber($this->qrCodeObject->version,$this->qrCodeObject->errorCorrectCode));
-		$this->qrCodeObject->bits = $qrMode->DataEncodation();
+		$qrModeInfo->setMaxBitLength((new ErrorCorrectionCode)->getDataCodeNumber($this->qrCodeObject->version,$this->qrCodeObject->errorCorrectCode));
+		$this->qrCodeObject->bits = $qrModeInfo->DataEncodation();
 	}
 	/**
 	* Step 3 Error correction coding 纠错编码
@@ -94,17 +69,15 @@ class QRCodeGenerate
 		}
 		
 		//纠错码字数
-		$errorCorrectionCode = new ErrorCorrectionCode;
-		$ErrorCorrectingCodeNumber = $errorCorrectionCode->getErrorCorrectingCodeNumber($this->qrCodeObject->version,$this->qrCodeObject->errorCorrectCode);
+		$errorCorrectingCodeNumber = (new ErrorCorrectionCode)->getErrorCorrectingCodeNumber($this->qrCodeObject->version,$this->qrCodeObject->errorCorrectCode);
 		
 		foreach($data as $key => $value)
 		{
-			$polynomial->setPolynomial($ErrorCorrectingCodeNumber + (count($data) - $key - 1),$value);
+			$polynomial->setPolynomial($errorCorrectingCodeNumber + (count($data) - $key - 1),$value);
 		}
 		
 		//多项式除法
-		$errorCorrectionCodingPolynomial = new ErrorCorrectionCodingPolynomial;
-		$eccPolynomial = $errorCorrectionCodingPolynomial->getErrorCorrectionCodingPolynomial($ErrorCorrectingCodeNumber);
+		$eccPolynomial = (new ErrorCorrectionCodingPolynomial)->getErrorCorrectionCodingPolynomial($errorCorrectingCodeNumber);
 		
 		//重复执行步骤(数据码字的数量)的次。
 		//echo '初始值：'.$polynomial."<br>";
@@ -126,18 +99,18 @@ class QRCodeGenerate
 	/**
 	* Step 3.1 纠错编码-多项式计算
 	*/
-	private function PolynomialCalc(Polynomial $polynomial,Polynomial $errorCorrectionCodingPolynomial)
+	private function PolynomialCalc(Polynomial $polynomial,Polynomial $eccPolynomial)
 	{
 		$first = current($polynomial->getPolynomial());
-		$firstecc = current($errorCorrectionCodingPolynomial->getPolynomial());
+		$firstecc = current($eccPolynomial->getPolynomial());
 		
-		$errorCorrectionCodingPolynomial->multiplication((new Polynomial)->setPolynomial($first['exponent'] - $firstecc['exponent'],1));
+		$eccPolynomial->multiplication((new Polynomial)->setPolynomial($first['exponent'] - $firstecc['exponent'],1));
 		
 		$logAantilog = new LogAantilog;
 		$log = $logAantilog->getAlphaByInteger($first['coefficient']);
 		
 		$polynomial = new Polynomial;
-		foreach($errorCorrectionCodingPolynomial->toArray() as $key => $value)
+		foreach($eccPolynomial->toArray() as $key => $value)
 		{
 			if($value == 1)
 			{
@@ -157,8 +130,7 @@ class QRCodeGenerate
 	*/
 	public function StructureFinalMessage()
 	{
-		$errorCorrectionCode = new ErrorCorrectionCode;
-		$errorCorrectingCodeBlocks = $errorCorrectionCode->getErrorCorrectingCodeBlocks($this->qrCodeObject->version,$this->qrCodeObject->errorCorrectCode);
+		$errorCorrectingCodeBlocks = (new ErrorCorrectionCode)->getErrorCorrectingCodeBlocks($this->qrCodeObject->version,$this->qrCodeObject->errorCorrectCode);
 		if(count($errorCorrectingCodeBlocks['ErrorCorrectingCodeBlocks_1']) == 1 and count($errorCorrectingCodeBlocks['ErrorCorrectingCodeBlocks_2']) == 0)
 		{
 			//较小版本的二维码仅包括一个数据码字块，具有用于该块的一组纠错码字。在这种情况下，不需要交替排列。只需将纠错码字放置在数据码字之后
@@ -175,7 +147,6 @@ class QRCodeGenerate
 			{
 				$bits[$key] = base_convert($value,2,10);
 			}
-			
 			
 			$errorCodeBit = $this->qrCodeObject->errorCodeBits;
 			$errorCodeBits = str_split($errorCodeBit,8);
@@ -238,32 +209,24 @@ class QRCodeGenerate
 		$this->qrCodeObject->qrCodeImage = $qrCodeImage;
 	}
 	/**
-	* 在矩阵中布置模块-蛇形数据处理
+	* Step 5.1 在矩阵中布置模块-蛇形数据处理
 	*/
 	private function DataInMatrix(QRCodeImageGenerate $qrCodeImage)
 	{
 		$finalBits = $this->qrCodeObject->finalBits;
-		$bitIndex = 0;
 		
-		$qrImage = $qrCodeImage->getQRCodeImage();
-		$length = $qrCodeImage->getQRCodeImageLength($this->qrCodeObject->version);
+		$_qrImage = $qrImage = $qrCodeImage->getQRCodeImage();
+		$_qrImage = end($_qrImage);
+		$_qrImage = end($_qrImage);
 		
 		//起始坐标
-		$dm = new DataInMatrix($length - 1,$length - 1);
-		
-		//$mask = new QRCodeMask;
+		$dm = new DataInMatrix($_qrImage['point']->x,$_qrImage['point']->y);
 		
 		$dir_up = TRUE;
 		for($i = 0; $i < strlen($finalBits); $i++)
 		{
-			//*/
 			$bit1 = $finalBits[$i];
 			$bit2 = isset($finalBits[$i + 1]) ? $finalBits[$i + 1] : -1;
-			/*/
-			//test
-			$bit1 = $i + 1;
-			$bit2 = $bit1 + 1;
-			//**/
 			
 			$point = $dm->getPoint();
 			if(!isset($qrImage[$point->x][$point->y]['type']))
@@ -281,22 +244,13 @@ class QRCodeGenerate
 				}
 				$dm->changeDir(DataInMatrix::LEFT);
 				$dm->changeDir(DataInMatrix::LEFT);
-				
 				$i--;
 			}
 			elseif($qrImage[$point->x][$point->y]['type'] != QRCodeImageType::DATA)
 			{
 				while(isset($qrImage[$point->x][$point->y]['type']) and $qrImage[$point->x][$point->y]['type'] != QRCodeImageType::DATA)
 				{
-					switch($dir_up)
-					{
-						case TRUE:
-							$dm->changeDir(DataInMatrix::UP);
-							break;
-						case FALSE:
-							$dm->changeDir(DataInMatrix::DOWN);
-							break;
-					}
+					$dm->changeDir($dir_up ? DataInMatrix::UP : DataInMatrix::DOWN);
 					$point = $dm->getPoint();
 				}
 				$i--;
@@ -309,24 +263,13 @@ class QRCodeGenerate
 					$point = $dm->getPoint();
 				}
 				
-				//$bit1 = $mask->mode(1,$point->x,$point->y,$bit1);
 				$qrCodeImage->mergeByCoordinate($bit1,$point);
 				if($bit2 != -1 and isset($qrImage[$point->x][$point->y - 1]['type']) and $qrImage[$point->x][$point->y - 1]['type'] == QRCodeImageType::DATA)
 				{
-					//$bit2 = $mask->mode(1,$point->x,$point->y - 1,$bit2);
 					$qrCodeImage->mergeByCoordinate($bit2,new Point($point->x,$point->y - 1));
 					$i++;
 				}
-				
-				switch($dir_up)
-				{
-					case TRUE:
-						$dm->changeDir(DataInMatrix::UP);
-						break;
-					case FALSE:
-						$dm->changeDir(DataInMatrix::DOWN);
-						break;
-				}
+				$dm->changeDir($dir_up ? DataInMatrix::UP : DataInMatrix::DOWN);
 			}
 		}
 		
@@ -337,8 +280,7 @@ class QRCodeGenerate
 	*/
 	public function Masking()
 	{
-		$mask = new QRCodeMask;
-		return $mask->setQRCodeImage($this->qrCodeObject->qrCodeImage);
+		return (new QRCodeMask)->setQRCodeImage($this->qrCodeObject->qrCodeImage);
 	}
 	/**
 	* Step 7 Format and Version Information 格式和版本信息
@@ -377,16 +319,20 @@ class QRCodeGenerate
 	}
 	
 	/**
-	* 输出html二维码
+	* debug 输出html二维码
 	*/
 	public function toQRCode()
 	{
 		return $this->qrCodeObject->qrCodeImage->toQRCode();
 	}
 	
-	//TODO 输出二维码图片
-	public function toImage($imageType)
+	/**
+	* getQRCodeObject
+	* 
+	* @return QRCodeObject
+	*/
+	public function getQRCodeObject()
 	{
-		
+		return $this->qrCodeObject;
 	}
 }

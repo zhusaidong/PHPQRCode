@@ -10,6 +10,7 @@ spl_autoload_register("\PHPQRCode\PHPQRCode::__autoload");
 
 use PHPQRCode\QRCodeGenerate;
 use PHPQRCode\QRCodeObject;
+use PHPQRCode\QRCodeImageAdvanced;
 
 class PHPQRCode
 {
@@ -27,7 +28,7 @@ class PHPQRCode
 	* @param string $text 内容
 	* @param string $errorCorrectCode 纠错码级别
 	* 
-	* @return string 二维码
+	* @return QRCodeImageAdvanced QRCodeImageAdvanced
 	*/
 	public function createQRCode($text,$errorCorrectCode = '')
 	{
@@ -53,10 +54,12 @@ class PHPQRCode
 		//格式和版本信息
 		$qrCodeGenerate->FormatAndVersionInformation($mask);
 		
-		$qrCode = $qrCodeGenerate->toQRCode();
-		echo $qrCode;
+		//debug
+		//echo $qrCodeGenerate->toQRCode();exit;
 		
 		unset($qrCodeObject,$qrMode);
+		
+		return new QRCodeImageAdvanced($qrCodeGenerate->getQRCodeObject()->qrCodeImage);
 	}
 	
 	/**
