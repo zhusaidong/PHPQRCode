@@ -10,7 +10,9 @@ use PHPQRCode\PHPQRCode;
 use PHPQRCode\ErrorCorrectCode;
 use PHPQRCode\QRCodeImageAdvanced;
 
-(new PHPQRCode)
-	->createQRCode('HELLO WORLD',ErrorCorrectCode::Q)
-	//->setSize(10)
+$text = isset($_GET['text'])?$_GET['text']:'HELLO WORLD';
+
+echo (new PHPQRCode)
+	->createQRCode($text,ErrorCorrectCode::Q)
+	->setSize(500)
 	->toPng();

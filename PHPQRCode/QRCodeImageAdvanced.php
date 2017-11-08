@@ -1,6 +1,6 @@
 <?php
 /**
-* QRCodeImage
+* QRCodeImage Advanced
 * @author Zsdroid [635925926@qq.com]
 * @version 0.1.0.0
 */
@@ -9,10 +9,14 @@ namespace PHPQRCode;
 class QRCodeImageAdvanced
 {
 	private $qrCodeImage = NULL;
+	private $qrCodeImageLength = 0;
 	private $imageSize = 10;
 	public function __construct(QRCodeImageGenerate $qrCodeImage)
 	{
 		$this->qrCodeImage = $qrCodeImage;
+		$this->qrCodeImageLength = $qrCodeImage->getQRCodeImageLength() + 4;
+		
+		$this->imageSize *= $this->qrCodeImageLength;
 	}
 	
 	/**
@@ -24,11 +28,8 @@ class QRCodeImageAdvanced
 	*/
 	private function toImage($imageType = 'png',$saveName = NULL)
 	{
-		//放大倍数
-		$enlarge = $this->imageSize;
-		
 		$qrCodeImageArray = $this->qrCodeImage->toArray();
-		$width = $height = count($qrCodeImageArray);
+		$width = $height = $this->qrCodeImageLength;
 		
 		$image = imagecreate($width,$height);
 		$black = imagecolorallocate($image, 0, 0, 0);
@@ -39,39 +40,55 @@ class QRCodeImageAdvanced
 		{
 			for($j = 0; $j < $height; $j++)
 			{
-				if($qrCodeImageArray[$i][$j] === 1)
+				if($qrCodeImageArray[$i][$j] == 1)
 				{
 					imagesetpixel($image,$i,$j,$black);
 				}
 			}
 		}
 		
-		$enlargeImage = imagecreate($width * $enlarge, $height * $enlarge);
-		imagecopyresized($enlargeImage, $image, 0, 0, 0, 0, $width * $enlarge, $height * $enlarge, $width, $height);
+		$enlarge = $this->imageSize;
+		$enlargeImage = imagecreate($enlarge,$enlarge);
+		imagecopyresized($enlargeImage,$image,0,0,0,0,$enlarge,$enlarge,$width,$height);
 		imagedestroy($image);
 		
-		header('content-type:image/'.$imageType);
+		$saveName === NULL and header('content-type:image/'.$imageType);
 		switch($imageType)
 		{
 			case 'png':
 				imagepng($enlargeImage,$saveName);
+				imagedestroy($enlargeImage);
+				return $saveName;
 				break;
 			case 'jpeg':
 			case 'jpg':
 				imagejpeg($enlargeImage,$saveName);
+				imagedestroy($enlargeImage);
+				return $saveName;
+				break;
+			case 'base64':
+				ob_start();
+				imagepng($enlargeImage);
+				imagedestroy($enlargeImage);
+				$image_contents = ob_get_contents();
+				ob_end_clean();
+				return 'data:image/png;base64,'.base64_encode($image_contents);
 				break;
 		}
-		imagedestroy($enlargeImage);
 	}
 	
 	/**
 	* 设置大小
+	* 	(10-50)倍之间
 	* @param int $imageSize
 	* 
 	* @return QRCodeImageAdvanced
 	*/
-	public function setSize($imageSize = 10)
+	public function setSize($imageSize)
 	{
+		$imageSize < 10 * $this->qrCodeImageLength and $imageSize = 10 * $this->qrCodeImageLength;
+		$imageSize > 50 * $this->qrCodeImageLength and $imageSize = 50 * $this->qrCodeImageLength;
+		
 		$this->imageSize = $imageSize;
 		return $this;
 	}
@@ -83,7 +100,7 @@ class QRCodeImageAdvanced
 	*/
 	public function toPng($saveName = NULL)
 	{
-		$this->toImage('png',$saveName);
+		return $this->toImage('png',$saveName);
 	}
 	/**
 	* 输出二维码jpg图片
@@ -93,6 +110,15 @@ class QRCodeImageAdvanced
 	*/
 	public function toJpeg($saveName = NULL)
 	{
-		$this->toImage('jpeg',$saveName);
+		return $this->toImage('jpeg',$saveName);
+	}
+	/**
+	* 输出二维码 Base64图片
+	* 
+	* @return image
+	*/
+	public function toBase64()
+	{
+		return $this->toImage('base64','base64');
 	}
 }

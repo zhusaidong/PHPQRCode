@@ -1,6 +1,8 @@
 <?php
 /**
 * 数据容量
+* 	TODO 添加完整(目前只有Number，Mix)：
+* 	http://tiierr.xyz/2017/02/25/%E4%BA%8C%E7%BB%B4%E7%A0%81-%E5%AD%97%E7%AC%A6%E5%AE%B9%E9%87%8F%E8%A1%A8/
 * @author Zsdroid [635925926@qq.com]
 * @version 0.1.0.0
 */
@@ -82,6 +84,7 @@ class DataCapacity
 				return $key;
 			}
 		}
+		//exit('no find version in DataCapacity');
 		return 0;
 	}
 }

@@ -9,16 +9,16 @@ namespace PHPQRCode;
 
 class QRCodeMask
 {
-	private $qrCodeImages = [];
 	public function __construct()
 	{
 	}
 	public function setQRCodeImage(QRCodeImageGenerate $qrCodeImage)
 	{
 		$qrCodeImageTotals = [];
+		$qrCodeImages = [];
 		for($k = 0; $k < 8; $k++)
 		{
-			$_temp = $qrCodeImage;
+			$_temp = clone $qrCodeImage;
 			$image = $_temp->getQRCodeImage();
 			for($i = 0; $i < count($image); $i++)
 			{
@@ -32,6 +32,8 @@ class QRCodeMask
 				}
 			}
 			
+			$qrCodeImages[$k] = $_temp;
+			
 			$qrCodeImageTotals[$k] = 0;
 			for($i = 0; $i < 4; $i++)
 			{
@@ -41,21 +43,9 @@ class QRCodeMask
 		
 		$minMask = array_search(min($qrCodeImageTotals),$qrCodeImageTotals);
 		
-		$image = $qrCodeImage->getQRCodeImage();
-		for($i = 0; $i < count($image); $i++)
-		{
-			for($j = 0; $j < count($image[$i]); $j++)
-			{
-				$_image = $image[$i][$j];
-				if($_image['type'] == QRCodeImageType::DATA)
-				{
-					$qrCodeImage->mergeByCoordinate($this->mode($minMask,$i,$j,$_image['bit']),$_image['point']);
-				}
-			}
-		}
 		return [
 			'mask'		 =>$minMask,
-			'qrCodeImage'=>$qrCodeImage,
+			'qrCodeImage'=>$qrCodeImages[$minMask],
 		];
 	}
 	//8种掩码模式

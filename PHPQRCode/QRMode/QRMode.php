@@ -66,7 +66,10 @@ class QRMode
 			case QRMode::isChinese($text):
 				$qrMode = new Chinese();
 				break;
-			case QRMode::isMix($text):
+			case QRMode::isBit($text):
+				$qrMode = new Bit();
+				break;
+			default:
 				$qrMode = new Mix();
 				break;
 		}
@@ -74,6 +77,13 @@ class QRMode
 		return $qrMode;
 	}
 	
+	/**
+	* 是否是字节
+	*/
+	public function isBit($text)
+	{
+		return !empty(str_replace(Mix::getStrList(),'',$text));
+	}
 	/**
 	* 是否是数字
 	*/
@@ -86,14 +96,14 @@ class QRMode
 	*/
 	public static function isLetter($text)
 	{
-		return !preg_match('/[^a-zA-Z]+/',$text);
+		return !preg_match('/[^A-Z]+/',$text);
 	}
 	/**
 	* 是否是混合
 	*/
 	public static function isMix($text)
 	{
-		return !!preg_match('/(?:[a-zA-Z]){1}(?:[0-9]){1}|(?:[\s\$%\*\+-\.\/\:]){1}/',$text);
+		return !!preg_match('/(?:[A-Z]){1,}(?:[0-9]){1,}|(?:[\s\$%\*\+-\.\/\:]){1,}/',$text);
 	}
 	/**
 	* 是否是中文

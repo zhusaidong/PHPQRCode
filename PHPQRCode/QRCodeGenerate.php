@@ -311,8 +311,8 @@ class QRCodeGenerate
 		
 		//二维码周围添加2格空白
 		$whiteImage = new QRCodeImageGenerate($version);
-		$whiteImage->createQRCodeImageByLength($whiteImage->getQRCodeImageLength() + 8);
-		$whiteImage->merge($image->toArray(),new Point(4,4));
+		$whiteImage->createQRCodeImageByLength($whiteImage->getQRCodeImageLength() + 4);
+		$whiteImage->merge($image->toArray(),new Point(2,2));
 		
 		$this->qrCodeObject->qrCodeImage = $whiteImage;
 		unset($whiteImage,$image);
