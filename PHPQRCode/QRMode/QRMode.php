@@ -97,24 +97,22 @@ class QRMode
 		$qrMode = null;
 		switch($text)
 		{
-			case QRMode::isBinary($text):
-				$qrMode = new Binary();
-				break;
-			case QRMode::isNumeric($text):
+			case self::isNumeric($text):
 				$qrMode = new Numeric();
 				break;
-			case QRMode::isAlphanumeric($text):
+			case self::isAlphanumeric($text):
 				$qrMode = new Alphanumeric();
 				break;
-			case QRMode::isKanji($text):
+			case self::isKanji($text):
 				$qrMode = new Kanji();
 				break;
-			case QRMode::isByte($text):
+			case self::isByte($text):
 				$qrMode = new Byte();
 				break;
-			default:
-				$qrMode = new Alphanumeric();
-				break;
+		}
+		if(empty($qrMode))
+		{
+			echo 'no support context!';exit;
 		}
 		return $qrMode->setData($text);
 	}
@@ -146,12 +144,5 @@ class QRMode
 	public static function isKanji($text)
 	{
 		return !preg_match('/[^\x7f-\xff]/',$text);
-	}
-	/**
-	* 是否是二进制
-	*/
-	public static function isBinary($text)
-	{
-		return !preg_match('/[^01]+/',$text);
 	}
 }

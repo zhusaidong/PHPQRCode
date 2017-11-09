@@ -41,6 +41,9 @@ class QRCodeMask
 			}
 		}
 		
+		//debug
+		//foreach($qrCodeImages as $key => $value)echo $key.'=>'.$qrCodeImageTotals[$key].$value->toQRCode();exit;
+		
 		$minMask = array_search(min($qrCodeImageTotals),$qrCodeImageTotals);
 		
 		return [

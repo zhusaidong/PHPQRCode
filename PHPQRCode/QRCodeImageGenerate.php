@@ -417,7 +417,7 @@ class QRCodeImageGenerate
 				
 				if($this->toQRCode)
 				{
-					$str .= '<span'.$textcolor.' title="'.$v['point'].'">&nbsp;&nbsp;&nbsp;</span>';
+					$str .= '<span'.$textcolor.' title="'.$v['point'].'">&nbsp;</span>';
 				}
 				else
 				{
