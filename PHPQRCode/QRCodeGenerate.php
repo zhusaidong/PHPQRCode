@@ -45,7 +45,7 @@ class QRCodeGenerate
 		$qrMode = (new QRMode)->getMode($this->qrCodeObject->content);
 		//根据数据容量获取二维码版本
 		$this->qrCodeObject->version = (new DataCapacity)->getVersion(strlen($this->qrCodeObject->content),$this->qrCodeObject->errorCorrectCode,$qrMode->name);
-		return $qrMode;
+		return $qrMode->setVersion($this->qrCodeObject->version);
 	}
 	/**
 	* Step 2 Data encodation 数据编码

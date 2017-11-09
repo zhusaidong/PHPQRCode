@@ -1,25 +1,27 @@
 <?php
 /**
-* 字节模式
+* 字节编码
 * 	包含小写字母，逗号和感叹号，所以它不能用字符模式编码。
 * @author Zsdroid [635925926@qq.com]
 * @version 0.1.0.0
 */
 namespace PHPQRCode\QRMode;
 
-class Bit extends QRMode implements QRMode_Interface
+class Byte extends QRMode implements QRMode_Interface
 {
-	private $bitLengthConfig = [1=>6,2=>11];
+	//数据长度转二进制的长度
+	protected $dataLength = [1=>8,10=>16,36=>16];
+	private $tag = '0100';
 	public function __construct()
 	{
-		$this->name = 'Bit';
+		$this->name = 'Byte';
 	}
 	/**
 	* 编码
 	*/
 	public function DataEncodation()
 	{
-		return $this->splitStr($this->data);
+		return $this->addPadBytes($this->splitStr($this->data));
 	}
 	/**
 	* 数字分割
@@ -27,24 +29,13 @@ class Bit extends QRMode implements QRMode_Interface
 	private function splitStr($text)
 	{
 		$list	= [];
-		$list[] = '0100';
-		$list[] = $this->conversionBinary(strlen($text));
+		$list[] = $this->tag;
+		$list[] = $this->conversionBinary(strlen($text),10,$this->getDataLength());
 		for($i = 0; $i < strlen($text); $i++)
 		{
 			$list[] = $this->conversionBinary(bin2hex($text[$i]),16);
 		}
-		
-		$data = implode('',$list);
-		
-		while(strlen($data) < $this->maxBitLength)
-		{
-			$data .= $this->PaddingBytes;
-		}
-		if(strlen($data) > $this->maxBitLength)
-		{
-			$data = substr($data,0,$this->maxBitLength);
-		}
-		return $data;
+		return implode('',$list);
 	}
 	/**
 	* 转二进制

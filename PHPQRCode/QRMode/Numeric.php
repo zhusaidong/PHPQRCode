@@ -1,6 +1,6 @@
 <?php
 /**
-* 数字
+* 数字编码
 * @author Zsdroid [635925926@qq.com]
 * @version 0.1.0.0
 */
@@ -13,20 +13,23 @@ namespace PHPQRCode\QRMode;
 	当数据的长度不足3个数字时，如果只有1个数字则用4bit，如果有2个数字就用7个bit来表示。
 		如："9876"被分成"987"和"6"两段，因此被表示为"1111011011 0110"。
 */
-class Number extends QRMode implements QRMode_Interface
+class Numeric extends QRMode implements QRMode_Interface
 {
+	//数据长度转二进制的长度
+	protected $dataLength = [1=>10,10=>12,36=>14];
+	private $tag = '0001';
 	//字节长度 = 字节数 * 3 + 1
 	private $bitLengthConfig = [1=>4,2=>7,3=>10];
 	public function __construct()
 	{
-		$this->name = 'Number';
+		$this->name = 'Numeric';
 	}
 	/**
 	* 编码
 	*/
 	public function DataEncodation()
 	{
-		return $this->splitStr($this->data);
+		return $this->addPadBytes($this->splitStr($this->data));
 	}
 	
 	/**
@@ -35,8 +38,8 @@ class Number extends QRMode implements QRMode_Interface
 	private function splitStr($text)
 	{
 		$list	= [];
-		$list[]	= '0001';
-		$list[]	= $this->conversionBinary(strlen($text),10);
+		$list[]	= $this->tag;
+		$list[]	= $this->conversionBinary(strlen($text),$this->getDataLength());
 		while(strlen($text) > 0)
 		{
 			$list[] = $this->conversionBinary(substr($text,0,3));

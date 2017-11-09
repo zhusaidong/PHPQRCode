@@ -9,6 +9,7 @@ namespace PHPQRCode\QRMode;
 class QRMode
 {
 	public $name = '';
+	protected $version = null;
 	protected $data = null;
 	protected $maxBitLength = 0;
 	//补齐码
@@ -17,14 +18,56 @@ class QRMode
 	{
 		
 	}
+	public function setVersion($version)
+	{
+		$this->version = $version;
+		return $this;
+	}
 	public function setData($data)
 	{
 		$this->data = $data;
+		return $this;
 	}
 	public function setMaxBitLength($maxBitLength)
 	{
 		$this->maxBitLength = $maxBitLength;
+		return $this;
 	}
+	//添加终止符,补齐码
+	protected function addPadBytes($data)
+	{
+		//如果尾部数据不足8bit,则在尾部充0:
+		$data = str_split($data,8);
+		foreach($data as $key => $value)
+		{
+			$data[$key] = str_pad($value,8,0,STR_PAD_RIGHT);
+		}
+		$data = implode('',$data);
+		//如果字符串仍然太短，则添加补齐码
+		while(strlen($data) < $this->maxBitLength)
+		{
+			$data .= $this->PaddingBytes;
+		}
+		if(strlen($data) > $this->maxBitLength)
+		{
+			$data = substr($data,0,$this->maxBitLength);
+		}
+		return $data;
+	}
+	//字符计数指示符-转二进制的长度
+	protected function getDataLength()
+	{
+		$length = 0;
+		foreach($this->dataLength as $key => $value)
+		{
+			if($key <= $this->version)
+			{
+				$length = $value;
+			}
+		}
+		return $length;
+	}
+	
 	/**
 	* 二进制转十进制数字
 	*/
@@ -57,58 +100,50 @@ class QRMode
 			case QRMode::isBinary($text):
 				$qrMode = new Binary();
 				break;
-			case QRMode::isNumber($text):
-				$qrMode = new Number();
+			case QRMode::isNumeric($text):
+				$qrMode = new Numeric();
 				break;
-			case QRMode::isLetter($text):
-				$qrMode = new Letter();
+			case QRMode::isAlphanumeric($text):
+				$qrMode = new Alphanumeric();
 				break;
-			case QRMode::isChinese($text):
-				$qrMode = new Chinese();
+			case QRMode::isKanji($text):
+				$qrMode = new Kanji();
 				break;
-			case QRMode::isBit($text):
-				$qrMode = new Bit();
+			case QRMode::isByte($text):
+				$qrMode = new Byte();
 				break;
 			default:
-				$qrMode = new Mix();
+				$qrMode = new Alphanumeric();
 				break;
 		}
-		$qrMode->setData($text);
-		return $qrMode;
+		return $qrMode->setData($text);
 	}
 	
 	/**
 	* 是否是字节
 	*/
-	public function isBit($text)
+	public function isByte($text)
 	{
-		return !empty(str_replace(Mix::getStrList(),'',$text));
+		return !empty(str_replace(Alphanumeric::getStrList(),'',$text));
 	}
 	/**
 	* 是否是数字
 	*/
-	public static function isNumber($text)
+	public static function isNumeric($text)
 	{
 		return !preg_match('/[^0-9]+/',$text);
 	}
 	/**
-	* 是否是字母
-	*/
-	public static function isLetter($text)
-	{
-		return !preg_match('/[^A-Z]+/',$text);
-	}
-	/**
 	* 是否是混合
 	*/
-	public static function isMix($text)
+	public static function isAlphanumeric($text)
 	{
 		return !!preg_match('/(?:[A-Z]){1,}(?:[0-9]){1,}|(?:[\s\$%\*\+-\.\/\:]){1,}/',$text);
 	}
 	/**
 	* 是否是中文
 	*/
-	public static function isChinese($text)
+	public static function isKanji($text)
 	{
 		return !preg_match('/[^\x7f-\xff]/',$text);
 	}

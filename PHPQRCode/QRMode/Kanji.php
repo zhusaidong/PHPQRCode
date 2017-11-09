@@ -1,6 +1,6 @@
 <?php
 /**
-* 汉字
+* 日文编码，也是双字节编码。同样，也可以用于中文编码
 * @author Zsdroid [635925926@qq.com]
 * @version 0.1.0.0
 */
@@ -20,18 +20,21 @@ namespace PHPQRCode\QRMode;
 		d)将b)步骤的结果加上c步骤的结果;
 		e)将结果转换为13位二进制串。
 */
-class Chinese extends QRMode implements QRMode_Interface
+class Kanji extends QRMode implements QRMode_Interface
 {
+	//数据长度转二进制的长度
+	protected $dataLength = [1=>8,10=>10,36=>12];
+	private $tag = '0001';
 	public function __construct()
 	{
-		$this->name = 'Chinese';
+		$this->name = 'Kanji';
 	}
 	/**
 	* 编码
 	*/
 	public function DataEncodation()
 	{
-		return $this->splitStr($this->data);
+		return $this->addPadBytes($this->splitStr($this->data));
 	}
 	
 	/**
@@ -40,7 +43,10 @@ class Chinese extends QRMode implements QRMode_Interface
 	private function splitStr($text)
 	{
 		$text = iconv('utf-8','gbk',$text);
-		$string = '';
+		
+		$list	= [];
+		$list[]	= $this->tag;
+		$list[]	= $this->conversionBinary(strlen($text),$this->getDataLength());
 		for($i = 0; $i < strlen($text); $i = $i + 2)
 		{
 			$str = '';
@@ -54,9 +60,9 @@ class Chinese extends QRMode implements QRMode_Interface
 			{
 				$str = ($one - 0xA6) * 0x60 + ($two - 0xA1);
 			}
-			$string .= $this->conversionBinary($str,13);
+			$list[] = $this->conversionBinary($str,13);
 		}
-		return $string;
+		return implode('',$list);
 	}
 	/**
 	* 转二进制
