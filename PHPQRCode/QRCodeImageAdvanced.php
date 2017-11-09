@@ -23,8 +23,6 @@ class QRCodeImageAdvanced
 	* 输出二维码图片
 	* @param string $imageType 图片类型
 	* @param string|null $saveName 图片地址
-	* 
-	* @return image
 	*/
 	private function toImage($imageType = 'png',$saveName = NULL)
 	{
@@ -95,8 +93,6 @@ class QRCodeImageAdvanced
 	/**
 	* 输出二维码png图片
 	* @param string|null $saveName 图片地址
-	* 
-	* @return image
 	*/
 	public function toPng($saveName = NULL)
 	{
@@ -105,8 +101,6 @@ class QRCodeImageAdvanced
 	/**
 	* 输出二维码jpg图片
 	* @param string|null $saveName 图片地址
-	* 
-	* @return image
 	*/
 	public function toJpeg($saveName = NULL)
 	{
@@ -115,7 +109,7 @@ class QRCodeImageAdvanced
 	/**
 	* 输出二维码 Base64图片
 	* 
-	* @return image
+	* @return string Base64
 	*/
 	public function toBase64()
 	{

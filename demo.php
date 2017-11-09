@@ -8,7 +8,6 @@ require_once('./PHPQRCode/PHPQRCode.php');
 
 use PHPQRCode\PHPQRCode;
 use PHPQRCode\ErrorCorrectCode;
-use PHPQRCode\QRCodeImageAdvanced;
 
 $text = isset($_GET['text'])?$_GET['text']:'HELLO WORLD';
 

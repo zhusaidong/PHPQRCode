@@ -42,18 +42,18 @@ class QRCodeGenerate
 	*/
 	public function DataAnalysis()
 	{
-		$qrModeInfo = (new QRMode)->getMode($this->qrCodeObject->content);
+		$qrMode = (new QRMode)->getMode($this->qrCodeObject->content);
 		//根据数据容量获取二维码版本
-		$this->qrCodeObject->version = (new DataCapacity)->getVersion(strlen($this->qrCodeObject->content),$this->qrCodeObject->errorCorrectCode,$qrModeInfo->name);
-		return $qrModeInfo;
+		$this->qrCodeObject->version = (new DataCapacity)->getVersion(strlen($this->qrCodeObject->content),$this->qrCodeObject->errorCorrectCode,$qrMode->name);
+		return $qrMode;
 	}
 	/**
 	* Step 2 Data encodation 数据编码
 	*/
-	public function DataEncodation(QRMode $qrModeInfo)
+	public function DataEncodation(QRMode $qrMode)
 	{
-		$qrModeInfo->setMaxBitLength((new ErrorCorrectionCode)->getDataCodeNumber($this->qrCodeObject->version,$this->qrCodeObject->errorCorrectCode));
-		$this->qrCodeObject->bits = $qrModeInfo->DataEncodation();
+		$qrMode->setMaxBitLength((new ErrorCorrectionCode)->getDataCodeNumber($this->qrCodeObject->version,$this->qrCodeObject->errorCorrectCode));
+		$this->qrCodeObject->bits = $qrMode->DataEncodation();
 	}
 	/**
 	* Step 3 Error correction coding 纠错编码
@@ -63,7 +63,7 @@ class QRCodeGenerate
 		$polynomial = new Polynomial;
 		
 		$data = [];
-		foreach(str_split($this->qrCodeObject->bits,8) as $key => $value)
+		foreach(str_split($this->qrCodeObject->bits,8) as $value)
 		{
 			$data[] = base_convert($value,2,10);
 		}
@@ -323,7 +323,7 @@ class QRCodeGenerate
 	*/
 	public function toQRCode()
 	{
-		return $this->qrCodeObject->qrCodeImage->toQRCode();
+		return $this->getQRCodeObject()->qrCodeImage->toQRCode();
 	}
 	
 	/**

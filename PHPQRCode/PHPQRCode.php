@@ -6,7 +6,7 @@
 */
 namespace PHPQRCode;
 
-spl_autoload_register("\PHPQRCode\PHPQRCode::__autoload");
+spl_autoload_register("PHPQRCode\PHPQRCode::__autoload");
 
 use PHPQRCode\QRCodeGenerate;
 use PHPQRCode\QRCodeObject;
@@ -53,11 +53,6 @@ class PHPQRCode
 		$mask = $qrCodeGenerate->Masking();
 		//格式和版本信息
 		$qrCodeGenerate->FormatAndVersionInformation($mask);
-		
-		//debug
-		//echo $qrCodeGenerate->toQRCode();exit;
-		
-		unset($qrCodeObject,$qrMode);
 		
 		return new QRCodeImageAdvanced($qrCodeGenerate->getQRCodeObject()->qrCodeImage);
 	}

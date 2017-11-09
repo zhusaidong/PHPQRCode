@@ -30,6 +30,8 @@ class Polynomial
 	* 设置多项式
 	* @param int $polynomial_exponent 多项式指数
 	* @param double $polynomial_coefficient 多项式系数
+	* 
+	* @return Polynomial
 	*/
 	public function setPolynomial($polynomial_exponent,$polynomial_coefficient)
 	{
@@ -141,16 +143,24 @@ class Polynomial
 		
 		unset($polynomialDividend,$polynomialDivisor,$polynomial);
 	}
-	//单项式乘法(多项式乘法涉及卷积很复杂)
+	
+	/**
+	* 多项式乘法
+	* @param Polynomial $polynomial 多项式
+	*/
 	public function multiplication(Polynomial $polynomial)
 	{
 		$polynomial1 = $this->toArray();
-		$polynomial2 = $polynomial->getPolynomial();
+		$polynomial2 = $polynomial->toArray();
 		
 		$polynomialArr = [];
 		foreach($polynomial1 as $key => $value)
 		{
-			$polynomialArr[$key + $polynomial2[0]['exponent']] = $value * $polynomial2[0]['coefficient'];
+			foreach($polynomial2 as $k => $v)
+			{
+				!isset($polynomialArr[$key + $k]) and $polynomialArr[$key + $k] = 0;
+				$polynomialArr[$key + $k] += $value * $v;
+			}
 		}
 		
 		$this->polynomial = [];
