@@ -6,11 +6,10 @@
 */
 namespace PHPQRCode\QRData;
 
-use PHPQRCode\ErrorCorrectCode;
-
 class VersionInformation
 {
 	private $versionInformation = [];
+	
 	public function __construct()
 	{
 		$this->init();
@@ -56,6 +55,7 @@ class VersionInformation
 		$this->data(39,"100111010101000001");
 		$this->data(40,"101000110001101001");
 	}
+	
 	public function getVersionInformation($version)
 	{
 		if($version < 7)

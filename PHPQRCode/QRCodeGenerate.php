@@ -44,7 +44,7 @@ class QRCodeGenerate
 	{
 		$qrMode = (new QRMode)->getMode($this->qrCodeObject->content);
 		//根据数据容量获取二维码版本
-		$this->qrCodeObject->version = (new DataCapacity)->getVersion(strlen($this->qrCodeObject->content),$this->qrCodeObject->errorCorrectCode,$qrMode->name);
+		$this->qrCodeObject->version = (new DataCapacity)->getVersion(strlen($this->qrCodeObject->content),$this->qrCodeObject->errorCorrectCode,$qrMode->getClassName());
 		return $qrMode->setVersion($this->qrCodeObject->version);
 	}
 	/**
@@ -130,8 +130,8 @@ class QRCodeGenerate
 	*/
 	public function StructureFinalMessage()
 	{
-		$errorCorrectingCodeBlocks = (new ErrorCorrectionCode)->getErrorCorrectingCodeBlocks($this->qrCodeObject->version,$this->qrCodeObject->errorCorrectCode);
-		if(count($errorCorrectingCodeBlocks['ErrorCorrectingCodeBlocks_1']) == 1 and count($errorCorrectingCodeBlocks['ErrorCorrectingCodeBlocks_2']) == 0)
+		$eccBlocks = (new ErrorCorrectionCode)->getErrorCorrectingCodeBlocks($this->qrCodeObject->version,$this->qrCodeObject->errorCorrectCode);
+		if(count($eccBlocks['ErrorCorrectingCodeBlocks_1']) == 1 and count($eccBlocks['ErrorCorrectingCodeBlocks_2']) == 0)
 		{
 			//较小版本的二维码仅包括一个数据码字块，具有用于该块的一组纠错码字。在这种情况下，不需要交替排列。只需将纠错码字放置在数据码字之后
 			$this->qrCodeObject->finalBits = $this->qrCodeObject->bits . $this->qrCodeObject->errorCodeBits;
@@ -139,7 +139,7 @@ class QRCodeGenerate
 		else
 		{
 			//较大版本的二维码需要分组交替排列
-			$errorCorrectingCodeBlocks = array_merge_recursive($errorCorrectingCodeBlocks['ErrorCorrectingCodeBlocks_1'],$errorCorrectingCodeBlocks['ErrorCorrectingCodeBlocks_2']);
+			$eccBlocks = array_merge_recursive($eccBlocks['ErrorCorrectingCodeBlocks_1'],$eccBlocks['ErrorCorrectingCodeBlocks_2']);
 			
 			$bit = $this->qrCodeObject->bits;
 			$bits = str_split($bit,8);
@@ -157,7 +157,7 @@ class QRCodeGenerate
 			
 			$data = [];
 			$a = 0;
-			foreach($errorCorrectingCodeBlocks as $key => $value)
+			foreach($eccBlocks as $key => $value)
 			{
 				$data[$key] = [
 					'bits'			=>array_slice($bits,$a,$value),
@@ -174,7 +174,7 @@ class QRCodeGenerate
 			}
 			
 			$bitStr = '';
-			for($i = 0; $i < max($errorCorrectingCodeBlocks); $i++)
+			for($i = 0; $i < max($eccBlocks); $i++)
 			{
 				foreach($bits as $key => $value)
 				{

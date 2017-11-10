@@ -8,24 +8,25 @@ namespace PHPQRCode;
 class Polynomial
 {
 	private $polynomial = [];
-	//表达式字幕
-	private $value = 'x';
-	/**
-	* @var 简化模式
-	* 	当 "系数=0/1,指数=0" 时,简化表达式
-	*/
+	
+	//只作用于显示的时候
+	//表达式字母
+	private $expressionLetters = 'x';
+	//简化模式:当 "系数=0/1,指数=0" 时,简化表达式
 	private $simplyMode = FALSE;
+	
 	public function __construct()
 	{
 	}
-	public function setValue($value)
+	public function setExpressionLetters($expressionLetters)
 	{
-		$this->value = $value;
+		$this->expressionLetters = $expressionLetters;
 	}
 	public function setSimplyMode($simplyMode)
 	{
 		$this->simplyMode = $simplyMode;
 	}
+	
 	/**
 	* 设置多项式
 	* @param int $polynomial_exponent 多项式指数
@@ -89,7 +90,7 @@ class Polynomial
 			}
 			else
 			{
-				$exponent = $this->value.'<sup>'.$value['exponent'].'</sup>';
+				$exponent = $this->expressionLetters.'<sup>'.$value['exponent'].'</sup>';
 			}
 			$polynomialExpression[] = $coefficient.$exponent;
 		}
@@ -143,7 +144,6 @@ class Polynomial
 		
 		unset($polynomialDividend,$polynomialDivisor,$polynomial);
 	}
-	
 	/**
 	* 多项式乘法
 	* @param Polynomial $polynomial 多项式

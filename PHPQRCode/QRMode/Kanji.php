@@ -1,87 +1,53 @@
 <?php
 /**
-* 日文编码，也是双字节编码。同样，也可以用于中文编码
+* 日文编码
+* 	也是双字节编码,也可以用于中文编码
 * @author Zsdroid [635925926@qq.com]
 * @version 0.1.0.0
 */
 namespace PHPQRCode\QRMode;
-/*
-中文汉字的转换步骤：
-	1、对于第一字节为0xA1~0xAA之间,第二字节在0xA1~0xFE之间字符：
-		a)第一字节减去0xA1；
-		b)上一步结果乘以0x60;
-		c）第二字节减去0xA1;
-		d)将b)步骤的结果加上c步骤的结果;
-		e)将结果转换为13位二进制串。
-	1、对于第一字节为0xB0~0xFA之间,第二字节在0xA1~0xFE之间字符：
-		a)第一字节减去0xA6；
-		b)上一步结果乘以0x60;
-		c）第二字节减去0xA1;
-		d)将b)步骤的结果加上c步骤的结果;
-		e)将结果转换为13位二进制串。
-*/
+
 class Kanji extends QRMode implements QRMode_Interface
 {
-	//数据长度转二进制的长度
-	protected $dataLength = [1=>8,10=>10,36=>12];
-	private $tag = '0001';
 	public function __construct()
 	{
-		$this->name = 'Kanji';
+		$this->indicator = '1000';
+		$this->characterCountIndicator = [1=>8,10=>10,36=>12];
 	}
 	/**
 	* 编码
 	*/
 	public function DataEncodation()
 	{
-		return $this->addPadBytes($this->splitStr($this->data));
-	}
-	
-	/**
-	* 分割
-	*/
-	private function splitStr($text)
-	{
-		$text = iconv('utf-8','gbk',$text);
+		$text = iconv('utf-8','Shift_jis//ignore',$this->data);
 		
 		$list	= [];
-		$list[]	= $this->tag;
-		$list[]	= $this->conversionBinary(strlen($text),$this->getDataLength());
-		for($i = 0; $i < strlen($text); $i = $i + 2)
+		$list[]	= $this->indicator;
+		$list[]	= $this->toBinary(strlen($text) / 2,10,$this->getCharacterCountIndicatorLength());
+		while(strlen($text) > 0)
 		{
-			$str = '';
-			$one = $this->hexEncode($text[$i]);
-			$two = $this->hexEncode($text[$i + 1]);
-			if(($one >= 0xA1 and $one <= 0xAA) and ($two >= 0xA1 and $two <= 0xFE))
+			$t = '0x'.bin2hex(substr($text,0,2));
+			if($t >= 0x8140 and $t <= 0x9FFC)
 			{
-				$str = ($one - 0xA1) * 0x60 + ($two - 0xA1);
+				$t = $t - 0x8140;
 			}
-			else if(($one >= 0xB0 and $one <= 0xFA) and ($two >= 0xA1 and $two <= 0xFE))
+			else if($t >= 0xE040 and $t <= 0xEBBF)
 			{
-				$str = ($one - 0xA6) * 0x60 + ($two - 0xA1);
+				$t = $t - 0xC140;
 			}
-			$list[] = $this->conversionBinary($str,13);
+			$t = base_convert($t,10,16);
+			$t = str_pad($t,4,0,STR_PAD_LEFT);
+			
+			$t_1 = '0x'.substr($t,0,2);
+			$t_2 = '0x'.substr($t,2,2);
+			$t = $t_1 * 0xC0 + $t_2;
+			
+			$t = base_convert($t,10,16);
+			
+			$list[] = $this->toBinary($t,16,13);
+			
+			$text = substr($text,2,strlen($text));
 		}
-		return implode('',$list);
-	}
-	/**
-	* 转二进制
-	*/
-	private function conversionBinary($str,$length = 0)
-	{
-		$binary = base_convert($str,16,2);
-		$binary = str_pad($binary,$length,0,STR_PAD_LEFT);
-		return $binary;
-	}
-	
-	//汉字转换为16进制编码
-	private function hexEncode($s)
-	{
-		return str_replace('%','0x',rawurlencode($s));
-	}
-	//16进制编码转换为汉字
-	private function hexDecode($s)
-	{
-		return rawurldecode(str_replace('0x','%',$s));
+		return $this->addPadBytes(implode('',$list));
 	}
 }

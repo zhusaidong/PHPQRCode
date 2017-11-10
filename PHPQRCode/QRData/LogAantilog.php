@@ -8,6 +8,7 @@ namespace PHPQRCode\QRData;
 class LogAantilog
 {
 	private $logAantilog = [];
+	
 	public function __construct()
 	{
 		$this->init();
@@ -271,7 +272,7 @@ class LogAantilog
 		$this->data(254,142,254,88);
 		$this->data(255,1,255,175);
 	}
-	
+	//todo 生成数据
 	private function createLogData()
 	{
 		$x = 0;
@@ -301,25 +302,19 @@ class LogAantilog
 		}
 		return $arr;
 	}
-	
-	public function data1($logKey,$logValue,$antilogKey = '',$antilogValue = '')
-	{
-		$logAantilog = [];
-		$logAantilog['log'] = [$logKey=>$logValue];//对数:α的指数=>整数
-		$antilogKey !== '' and $antilogValue !== '' and $logAantilog['antilog'] = [$antilogKey=>$antilogValue];//反对数:整数=>α的指数
-		$this->logAantilog[] = $logAantilog;
-	}
-	
-	public function data($logKey,$logValue,$antilogKey = '',$antilogValue = '')
+	private function data($logKey,$logValue,$antilogKey = '',$antilogValue = '')
 	{
 		$logAantilog = [];
 		$this->logAantilog['log'][$logKey] = $logValue;//对数:α的指数=>整数
 		$antilogKey !== '' and $antilogValue !== '' and $this->logAantilog['antilog'][$antilogKey] = $antilogValue;//反对数:整数=>α的指数
 	}
+	
+	//对数
 	public function getIntegerByAlpha($alpha)
 	{
 		return $this->logAantilog['log'][$alpha];
 	}
+	//反对数
 	public function getAlphaByInteger($integer)
 	{
 		return $this->logAantilog['antilog'][$integer];

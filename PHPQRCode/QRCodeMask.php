@@ -31,21 +31,16 @@ class QRCodeMask
 					}
 				}
 			}
-			
 			$qrCodeImages[$k] = $_temp;
-			
 			$qrCodeImageTotals[$k] = 0;
 			for($i = 0; $i < 4; $i++)
 			{
 				$qrCodeImageTotals[$k] += call_user_func_array([$this,'scoringRules_'.$i],[$_temp]);
 			}
 		}
-		
 		//debug
 		//foreach($qrCodeImages as $key => $value)echo $key.'=>'.$qrCodeImageTotals[$key].$value->toQRCode();exit;
-		
 		$minMask = array_search(min($qrCodeImageTotals),$qrCodeImageTotals);
-		
 		return [
 			'mask'		 =>$minMask,
 			'qrCodeImage'=>$qrCodeImages[$minMask],

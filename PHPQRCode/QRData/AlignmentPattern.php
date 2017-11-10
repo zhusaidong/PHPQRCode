@@ -1,6 +1,6 @@
 <?php
 /**
-* AlignmentPattern 校正图形
+* AlignmentPattern 校正图形 坐标
 * 	公式(version > 1) : AlignmentPattern数 = 二维码宽度数组个数 ^ 2 - 3
 * @author Zsdroid [635925926@qq.com]
 * @version 0.1.0.0
@@ -10,6 +10,7 @@ namespace PHPQRCode\QRData;
 class AlignmentPattern
 {
 	private $alignmentPattern = [];
+	
 	public function __construct()
 	{
 		$this->init();
@@ -69,18 +70,5 @@ class AlignmentPattern
 	public function getAlignmentPattern($version)
 	{
 		return $this->alignmentPattern[$version];
-	}
-	/**
-	* 校正图形个数
-	* @param int $version 版本
-	*/
-	public function getAlignmentPatternNumber($version)
-	{
-		if($version == 1)
-		{
-			return 0;
-		}
-		$alignmentPattern = $this->getAlignmentPattern($version);
-		return pow(count($alignmentPattern),2) - 3;
 	}
 }

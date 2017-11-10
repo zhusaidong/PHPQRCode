@@ -40,7 +40,7 @@ class QRCodeImageAdvanced
 			{
 				if($qrCodeImageArray[$i][$j] == 1)
 				{
-					imagesetpixel($image,$i,$j,$black);
+					imagesetpixel($image,$j,$i,$black);
 				}
 			}
 		}

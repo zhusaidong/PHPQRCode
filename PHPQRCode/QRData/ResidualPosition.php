@@ -9,6 +9,7 @@ namespace PHPQRCode\QRData;
 class ResidualPosition
 {
 	private $residualPosition = [];
+	
 	public function __construct()
 	{
 		$this->init();
@@ -60,6 +61,7 @@ class ResidualPosition
 	{
 		$this->residualPosition[$version] = $residualPosition;
 	}
+	
 	public function getResidualPosition($version)
 	{
 		return $this->residualPosition[$version];
