@@ -8,8 +8,8 @@ namespace PHPQRCode;
 
 class ErrorCorrectCode
 {
-	const L = 'L';
-	const M = 'M';
-	const Q = 'Q';
-	const H = 'H';
+	const L = 'L';//低
+	const M = 'M';//中
+	const Q = 'Q';//四分
+	const H = 'H';//高
 }

@@ -59,6 +59,7 @@ class PHPQRCode
 	
 	/**
 	* TODO 解析二维码
+	* 	https://cli.im/news/help/21072
 	* @param string $qrCodeUrl 二维码地址
 	* 
 	* @return string 内容
