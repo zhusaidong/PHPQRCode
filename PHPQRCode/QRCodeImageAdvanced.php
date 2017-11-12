@@ -84,7 +84,7 @@ class QRCodeImageAdvanced
 	*/
 	public function setSize($imageSize)
 	{
-		$imageSize < 10 * $this->qrCodeImageLength and $imageSize = 10 * $this->qrCodeImageLength;
+		$imageSize < $this->qrCodeImageLength and $imageSize = $this->qrCodeImageLength;
 		$imageSize > 50 * $this->qrCodeImageLength and $imageSize = 50 * $this->qrCodeImageLength;
 		
 		$this->imageSize = $imageSize;

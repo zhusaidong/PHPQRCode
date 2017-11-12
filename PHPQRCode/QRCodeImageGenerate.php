@@ -290,17 +290,17 @@ class QRCodeImageGenerate
 		//dark module-小黑块,坐标:[4 * $version + 9,8]
 		$this->mergeByCoordinate(1,new Point(4 * $version + 9,8),QRCodeImageType::DARK_MODULE);
 		
-		
+		//为了正常的进行评估，保留区域都被认定为亮模块。
 		//保留版本信息区:二维码版本7以上包含两个版本信息
 		if($version >= 7)
 		{
-			$versionInfo = '000000000000000000';
+			$versionInfo = str_pad('',18,1);
 			$this->merge($this->qrcodeVersionInfomation($versionInfo,QRCodeImageGenerate::VERSION_INFOMATION_DIR_DOWN),new Point(0,$this->qrCodeImageLength - 7 - 1 - 3),QRCodeImageType::VERSION_INFOMATION);
 			$this->merge($this->qrcodeVersionInfomation($versionInfo,QRCodeImageGenerate::VERSION_INFOMATION_DIR_UP),new Point($this->qrCodeImageLength - 7 - 1 - 3,0),QRCodeImageType::VERSION_INFOMATION);
 		}
 		
 		//保留格式信息区
-		$formatInformation = '000000000000000';
+		$formatInformation = str_pad('',15,1);
 		$this->merge($this->qrcodeFormatInfomation($formatInformation,QRCodeImageGenerate::FORMAT_INFOMATION_DIR_UP),new Point(0,8),QRCodeImageType::FORMAT_INFOMATION);
 		$this->merge($this->qrcodeFormatInfomation($formatInformation,QRCodeImageGenerate::FORMAT_INFOMATION_DIR_DOWN),new Point($this->qrCodeImageLength - 8 + 1,8),QRCodeImageType::FORMAT_INFOMATION);
 		$this->merge($this->qrcodeFormatInfomation($formatInformation,QRCodeImageGenerate::FORMAT_INFOMATION_DIR_LEFT),new Point(8,0),QRCodeImageType::FORMAT_INFOMATION);

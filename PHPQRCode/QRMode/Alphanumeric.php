@@ -47,6 +47,10 @@ class Alphanumeric extends QRMode implements QRMode_Interface
 		$nums   = [];
 		for($i = 0; $i < strlen($str); $i++)
 		{
+			if(!isset($this->strList[$str[$i]]))
+			{
+				echo 'no support Alphanumeric mode!';exit;
+			}
 			$nums[] = $this->strList[$str[$i]];
 		}
 		if(count($nums) == 2)

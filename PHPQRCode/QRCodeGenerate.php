@@ -19,6 +19,7 @@ use PHPQRCode\QRCodeImageGenerate,
 	PHPQRCode\QRMode\Binary,
 
 	PHPQRCode\QRData\DataCapacity,
+	PHPQRCode\QRData\RemainderBits,
 	PHPQRCode\QRData\ErrorCorrectionCode,
 	PHPQRCode\QRData\ErrorCorrectionCodingPolynomial,
 	PHPQRCode\QRData\AlignmentPattern,
@@ -193,6 +194,9 @@ class QRCodeGenerate
 			
 			$this->qrCodeObject->finalBits = $bitStr . $errorCodeBitStr;
 		}
+		
+		//添加 RemainderBits
+		$this->qrCodeObject->finalBits .= str_pad('',(new RemainderBits)->getRemainderBits($this->qrCodeObject->version),0,STR_PAD_RIGHT);
 	}
 	/**
 	* Step 5 Module placement in matrix 在矩阵中布置模块
@@ -205,6 +209,9 @@ class QRCodeGenerate
 		
 		//蛇形数据处理
 		$qrCodeImage = $this->DataInMatrix($qrCodeImage);
+		
+		//debug
+		//echo $qrCodeImage->toQRCode();exit;
 		
 		$this->qrCodeObject->qrCodeImage = $qrCodeImage;
 	}
@@ -231,6 +238,10 @@ class QRCodeGenerate
 			$point = $dm->getPoint();
 			if(!isset($qrImage[$point->x][$point->y]['type']))
 			{
+				if($point->y < 0)
+				{
+					break;
+				}
 				switch($dm->getCurrentDir())
 				{
 					case DataInMatrix::UP:
@@ -255,14 +266,17 @@ class QRCodeGenerate
 				}
 				$i--;
 			}
+			elseif($point->y == 4)
+			{
+				$dm->changeDir(DataInMatrix::RIGHT);
+				$point->x = 0;
+				$dir_up = FALSE;
+				$dm->changeDir(DataInMatrix::DOWN);
+				$i--;
+				continue;
+			}
 			else
 			{
-				if($point->y == 4)
-				{
-					$dm->changeDir(DataInMatrix::RIGHT);
-					$point = $dm->getPoint();
-				}
-				
 				$qrCodeImage->mergeByCoordinate($bit1,$point);
 				if($bit2 != -1 and isset($qrImage[$point->x][$point->y - 1]['type']) and $qrImage[$point->x][$point->y - 1]['type'] == QRCodeImageType::DATA)
 				{
@@ -272,7 +286,6 @@ class QRCodeGenerate
 				$dm->changeDir($dir_up ? DataInMatrix::UP : DataInMatrix::DOWN);
 			}
 		}
-		
 		return $qrCodeImage;
 	}
 	/**
@@ -290,6 +303,9 @@ class QRCodeGenerate
 		$version = $this->qrCodeObject->version;
 		
 		$image = $maskInfo['qrCodeImage'];
+		
+		//debug
+		//echo $maskInfo['mask'].$image->toQRCode();exit;
 		
 		$qrImageLength = $image->getQRCodeImageLength();
 		//保留版本信息区:二维码版本7以上包含两个版本信息

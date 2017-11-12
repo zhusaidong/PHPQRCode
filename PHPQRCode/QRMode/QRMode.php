@@ -72,13 +72,10 @@ class QRMode
 	*/
 	protected function addPadBytes($data)
 	{
+		//结束符
+		$data .= '0000';
 		//如果尾部数据不足8bit,则在尾部充0:
-		$data = str_split($data,8);
-		foreach($data as $key => $value)
-		{
-			$data[$key] = str_pad($value,8,0,STR_PAD_RIGHT);
-		}
-		$data = implode('',$data);
+		$data .= str_pad('',ceil(strlen($data) / 8) * 8 - strlen($data),0,STR_PAD_RIGHT);
 		//如果字符串仍然太短，则添加补齐码
 		while(strlen($data) < $this->maxBitLength)
 		{
@@ -144,6 +141,7 @@ class QRMode
 		{
 			echo 'no support context!';exit;
 		}
+		//$qrMode = new Byte();
 		return $qrMode->setData($text);
 	}
 	
