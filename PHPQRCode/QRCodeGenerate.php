@@ -33,6 +33,14 @@ class QRCodeGenerate
 	* @var 二维码对象
 	*/
 	private $qrCodeObject = null;
+	/**
+	* @var 二维码Mode
+	*/
+	private $qrCodeMode = null;
+	/**
+	* @var 二维码掩码
+	*/
+	private $qrCodeMask = null;
 	
 	public function __construct(QRCodeObject $qrCodeObject)
 	{
@@ -43,18 +51,20 @@ class QRCodeGenerate
 	*/
 	public function DataAnalysis()
 	{
-		$qrMode = (new QRMode)->getMode($this->qrCodeObject->content);
+		$this->qrCodeMode = (new QRMode)->getMode($this->qrCodeObject->content);
 		//根据数据容量获取二维码版本
-		$this->qrCodeObject->version = (new DataCapacity)->getVersion(strlen($this->qrCodeObject->content),$this->qrCodeObject->errorCorrectCode,$qrMode->getClassName());
-		return $qrMode->setVersion($this->qrCodeObject->version);
+		$this->qrCodeObject->version = (new DataCapacity)->getVersion(strlen($this->qrCodeObject->content),$this->qrCodeObject->errorCorrectCode,$this->qrCodeMode->getClassName());
+		$this->qrCodeMode->setVersion($this->qrCodeObject->version);
+		return $this;
 	}
 	/**
 	* Step 2 Data encodation 数据编码
 	*/
-	public function DataEncodation(QRMode $qrMode)
+	public function DataEncodation()
 	{
-		$qrMode->setMaxBitLength((new ErrorCorrectionCode)->getDataCodeNumber($this->qrCodeObject->version,$this->qrCodeObject->errorCorrectCode));
-		$this->qrCodeObject->bits = $qrMode->DataEncodation();
+		$this->qrCodeMode->setMaxBitLength((new ErrorCorrectionCode)->getDataCodeNumber($this->qrCodeObject->version,$this->qrCodeObject->errorCorrectCode));
+		$this->qrCodeObject->bits = $this->qrCodeMode->DataEncodation();
+		return $this;
 	}
 	/**
 	* Step 3 Error correction coding 纠错编码
@@ -96,6 +106,7 @@ class QRCodeGenerate
 			$errorCodeBits .= str_pad(base_convert($value,10,2),8,0,STR_PAD_LEFT);
 		}
 		$this->qrCodeObject->errorCodeBits = $errorCodeBits;
+		return $this;
 	}
 	/**
 	* Step 3.1 纠错编码-多项式计算
@@ -197,6 +208,7 @@ class QRCodeGenerate
 		
 		//添加 RemainderBits
 		$this->qrCodeObject->finalBits .= str_pad('',(new RemainderBits)->getRemainderBits($this->qrCodeObject->version),0,STR_PAD_RIGHT);
+		return $this;
 	}
 	/**
 	* Step 5 Module placement in matrix 在矩阵中布置模块
@@ -214,6 +226,7 @@ class QRCodeGenerate
 		//echo $qrCodeImage->toQRCode();exit;
 		
 		$this->qrCodeObject->qrCodeImage = $qrCodeImage;
+		return $this;
 	}
 	/**
 	* Step 5.1 在矩阵中布置模块-蛇形数据处理
@@ -293,19 +306,19 @@ class QRCodeGenerate
 	*/
 	public function Masking()
 	{
-		return (new QRCodeMask)->setQRCodeImage($this->qrCodeObject->qrCodeImage);
+		$this->qrCodeMask = (new QRCodeMask)->setQRCodeImage($this->qrCodeObject->qrCodeImage);
+		return $this;
 	}
 	/**
 	* Step 7 Format and Version Information 格式和版本信息
 	*/
-	public function FormatAndVersionInformation($maskInfo)
+	public function FormatAndVersionInformation()
 	{
 		$version = $this->qrCodeObject->version;
-		
-		$image = $maskInfo['qrCodeImage'];
+		$image = $this->qrCodeMask['qrCodeImage'];
 		
 		//debug
-		//echo $maskInfo['mask'].$image->toQRCode();exit;
+		//echo $this->qrCodeMask['mask'].$image->toQRCode();exit;
 		
 		$qrImageLength = $image->getQRCodeImageLength();
 		//保留版本信息区:二维码版本7以上包含两个版本信息
@@ -318,7 +331,7 @@ class QRCodeGenerate
 		}
 		
 		//保留格式信息区
-		$formatInfo = (new FormatInformation)->getFormatInformation($this->qrCodeObject->errorCorrectCode,$maskInfo['mask']);
+		$formatInfo = (new FormatInformation)->getFormatInformation($this->qrCodeObject->errorCorrectCode,$this->qrCodeMask['mask']);
 		
 		$image->merge($image->qrcodeFormatInfomation($formatInfo,QRCodeImageGenerate::FORMAT_INFOMATION_DIR_UP),new Point(0,8));
 		$image->merge($image->qrcodeFormatInfomation($formatInfo,QRCodeImageGenerate::FORMAT_INFOMATION_DIR_DOWN),new Point($qrImageLength - 8 + 1,8));
@@ -332,6 +345,7 @@ class QRCodeGenerate
 		
 		$this->qrCodeObject->qrCodeImage = $whiteImage;
 		unset($whiteImage,$image);
+		return TRUE;
 	}
 	
 	/**

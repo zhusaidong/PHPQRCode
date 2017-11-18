@@ -86,7 +86,6 @@ class QRCodeImageAdvanced
 	{
 		$imageSize < $this->qrCodeImageLength and $imageSize = $this->qrCodeImageLength;
 		$imageSize > 50 * $this->qrCodeImageLength and $imageSize = 50 * $this->qrCodeImageLength;
-		
 		$this->imageSize = $imageSize;
 		return $this;
 	}
