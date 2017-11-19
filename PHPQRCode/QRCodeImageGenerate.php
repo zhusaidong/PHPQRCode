@@ -400,6 +400,12 @@ class QRCodeImageGenerate
 					$bgcolor = ' style="background-color:#000000;"';
 					$textcolor = ' style="color:#ffffff;"';
 				}
+				//debug
+				else if($v['bit'] > 1)
+				{
+					$bgcolor = ' style="background-color:#ff0000;"';
+					$textcolor = ' style="color:#ffffff;"';
+				}
 				else
 				{
 					$textcolor = '';

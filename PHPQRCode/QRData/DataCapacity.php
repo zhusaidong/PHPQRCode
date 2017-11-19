@@ -186,7 +186,7 @@ class DataCapacity
 	
 	public function getVersion($length,$ecc,$type = 'Numeric')
 	{
-		foreach($this->dataCapacity as $key => $value)
+		foreach($this->dataCapacity as $version => $value)
 		{
 			if(!isset($value[$ecc][$type]))
 			{
@@ -194,7 +194,7 @@ class DataCapacity
 			}
 			if($value[$ecc][$type] - $length >= 0)
 			{
-				return $key;
+				return $version;
 			}
 		}
 		return 0;

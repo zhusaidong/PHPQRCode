@@ -90,14 +90,16 @@ class QRCodeGenerate
 		//多项式除法
 		$eccPolynomial = (new ErrorCorrectionCodingPolynomial)->getErrorCorrectionCodingPolynomial($errorCorrectingCodeNumber);
 		
+		//echo 'eccPolynomial：'.$eccPolynomial."<br>\n";
 		//重复执行步骤(数据码字的数量)的次。
-		//echo '初始值：'.$polynomial."<br>";
 		for($i = 0; $i < count($data); $i++)
 		{
+			//echo '第'.($i + 1).'次运算:'."<br>\n";
+			//echo '被除数：'.$polynomial."<br>\n";
 			$polynomialDivisor = $this->PolynomialCalc($polynomial,$eccPolynomial);
 			$polynomial->division($polynomialDivisor);
-			//echo '第'.($i + 1).'次运算的除数：'.$polynomialDivisor."<br>";
-			//echo '第'.($i + 1).'次运算后结果：'.$polynomial."<br>";
+			//echo '除数&nbsp;&nbsp;&nbsp;：'.$polynomialDivisor."<br>\n";
+			//echo '结果&nbsp;&nbsp;&nbsp;：'.$polynomial."<br>\n";
 		}
 		
 		$errorCodeBits = '';
@@ -234,6 +236,7 @@ class QRCodeGenerate
 	private function DataInMatrix(QRCodeImageGenerate $qrCodeImage)
 	{
 		$finalBits = $this->qrCodeObject->finalBits;
+		$finalBits = str_split($finalBits,1);
 		
 		$_qrImage = $qrImage = $qrCodeImage->getQRCodeImage();
 		$_qrImage = end($_qrImage);
@@ -243,7 +246,11 @@ class QRCodeGenerate
 		$dm = new DataInMatrix($_qrImage['point']->x,$_qrImage['point']->y);
 		
 		$dir_up = TRUE;
-		for($i = 0; $i < strlen($finalBits); $i++)
+		
+		//debug
+		//$finalBits = range(1,count($finalBits));
+		
+		for($i = 0; $i < count($finalBits); $i++)
 		{
 			$bit1 = $finalBits[$i];
 			$bit2 = isset($finalBits[$i + 1]) ? $finalBits[$i + 1] : -1;
@@ -299,6 +306,10 @@ class QRCodeGenerate
 				$dm->changeDir($dir_up ? DataInMatrix::UP : DataInMatrix::DOWN);
 			}
 		}
+		
+		//debug
+		//echo $qrCodeImage;exit;
+		
 		return $qrCodeImage;
 	}
 	/**
