@@ -69,7 +69,7 @@ class QRCodeGenerate
 	/**
 	* Step 3 Error correction coding 纠错编码
 	*/
-	public function ErrorCorrectionCoding()
+	public function ErrorCorrectionCoding($debugPolynomial = FALSE)
 	{
 		$polynomial = new Polynomial;
 		
@@ -80,27 +80,32 @@ class QRCodeGenerate
 		}
 		
 		//纠错码字数
-		$errorCorrectingCodeNumber = (new ErrorCorrectionCode)->getErrorCorrectingCodeNumber($this->qrCodeObject->version,$this->qrCodeObject->errorCorrectCode);
+		$ecc = new ErrorCorrectionCode;
+		$eccNumber = $ecc->getErrorCorrectingCodeNumber($this->qrCodeObject->version,$this->qrCodeObject->errorCorrectCode);
+		//$eccBlocks = $ecc->getErrorCorrectingCodeBlocks($this->qrCodeObject->version,$this->qrCodeObject->errorCorrectCode);
+		//$eccBlocksNumber = count($eccBlocks['ErrorCorrectingCodeBlocks_1']) + count($eccBlocks['ErrorCorrectingCodeBlocks_2']);
+		//$eccNumber *= $eccBlocksNumber;
 		
 		foreach($data as $key => $value)
 		{
-			$polynomial->setPolynomial($errorCorrectingCodeNumber + (count($data) - $key - 1),$value);
+			$polynomial->setPolynomial($eccNumber + (count($data) - $key - 1),$value);
 		}
 		
 		//多项式除法
-		$eccPolynomial = (new ErrorCorrectionCodingPolynomial)->getErrorCorrectionCodingPolynomial($errorCorrectingCodeNumber);
+		$eccPolynomial = (new ErrorCorrectionCodingPolynomial)->getErrorCorrectionCodingPolynomial($eccNumber);
 		
-		//echo 'eccPolynomial：'.$eccPolynomial."<br>\n";
+		if($debugPolynomial)echo 'eccPolynomial：'.$eccPolynomial."<br>\n";
 		//重复执行步骤(数据码字的数量)的次。
 		for($i = 0; $i < count($data); $i++)
 		{
-			//echo '第'.($i + 1).'次运算:'."<br>\n";
-			//echo '被除数：'.$polynomial."<br>\n";
+			if($debugPolynomial)echo '第'.($i + 1).'次运算:'."<br>\n";
+			if($debugPolynomial)echo '被除数：'.$polynomial."<br>\n";
 			$polynomialDivisor = $this->PolynomialCalc($polynomial,$eccPolynomial);
 			$polynomial->division($polynomialDivisor);
-			//echo '除数&nbsp;&nbsp;&nbsp;：'.$polynomialDivisor."<br>\n";
-			//echo '结果&nbsp;&nbsp;&nbsp;：'.$polynomial."<br>\n";
+			if($debugPolynomial)echo '除数：'.$polynomialDivisor."<br>\n";
+			if($debugPolynomial)echo '结果：'.$polynomial."<br>\n";
 		}
+		if($debugPolynomial)exit();
 		
 		$errorCodeBits = '';
 		foreach($polynomial->toArray() as $value)
@@ -356,7 +361,7 @@ class QRCodeGenerate
 		
 		$this->qrCodeObject->qrCodeImage = $whiteImage;
 		unset($whiteImage,$image);
-		return TRUE;
+		return $this;
 	}
 	
 	/**

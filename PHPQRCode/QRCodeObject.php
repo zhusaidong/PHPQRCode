@@ -36,4 +36,16 @@ class QRCodeObject
 	* @var 总二进制
 	*/
 	public $finalBits = null;
+	
+	public function __construct($option = [])
+	{
+		$this->set($option);
+	}
+	public function set($option = [])
+	{
+		foreach($option as $key => $value)
+		{
+			property_exists($this,$key) and $this->{$key} = $value;
+		}
+	}
 }

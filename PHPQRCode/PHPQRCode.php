@@ -21,21 +21,18 @@ class PHPQRCode
 	*/
 	public function createQRCode($text,$errorCorrectCode = '')
 	{
-		$qrCodeObject = new QRCodeObject;
-		$qrCodeObject->errorCorrectCode = $errorCorrectCode;
-		$qrCodeObject->content = $text;
-		
-		$qrCodeGenerate = new QRCodeGenerate($qrCodeObject);
-		$qrCodeGenerate
-			->DataAnalysis()//数据分析
-			->DataEncodation()//数据编码
-			->ErrorCorrectionCoding()//纠错编码
-			->StructureFinalMessage()//构造最终信息
-			->ModulePlacementInMatrix()//在矩阵中布置模块
-			->Masking()//掩模
-			->FormatAndVersionInformation();//格式和版本信息
-		
-		return new QRCodeImageAdvanced($qrCodeGenerate->getQRCodeObject()->qrCodeImage);
+		return new QRCodeImageAdvanced(
+			(new QRCodeGenerate(
+				new QRCodeObject(['errorCorrectCode'=>$errorCorrectCode,'content'=>$text])
+			))
+				->DataAnalysis()//数据分析
+				->DataEncodation()//数据编码
+				->ErrorCorrectionCoding()//纠错编码
+				->StructureFinalMessage()//构造最终信息
+				->ModulePlacementInMatrix()//在矩阵中布置模块
+				->Masking()//掩模
+				->FormatAndVersionInformation()//格式和版本信息
+			->getQRCodeObject()->qrCodeImage);
 	}
 	
 	/**

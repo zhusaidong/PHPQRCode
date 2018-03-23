@@ -186,7 +186,7 @@ class ErrorCorrectionCode
 	{
 		$this->versionErrorCorrectionCode[$version][$ecc] = [
 			'DataCodeNumber'				=>$dataCodeNumber,	//数据码总数
-			'ErrorCorrectingCodeNumber'		=>$eccNumber,		//纠错码字数
+			'ErrorCorrectingCodeNumber'		=>$eccNumber,		//每个块的纠错码字数
 			'ErrorCorrectingCodeBlocks_1'	=>$eccBlocks_1,		//第一块的纠错代码
 			'ErrorCorrectingCodeBlocks_2'	=>$eccBlocks_2,		//第二块的纠错代码
 		];
