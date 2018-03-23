@@ -15,7 +15,7 @@ class ErrorCorrectionCodingPolynomial
 	{
 		$this->init();
 	}
-	public function init()
+	private function init()
 	{
 		$this->data(7,"1x7+87x6+229x5+146x4+149x3+238x2+102x1+21x0");
 		$this->data(10,"1x10+251x9+67x8+46x7+61x6+118x5+70x4+64x3+94x2+32x1+45x0");
@@ -49,7 +49,7 @@ class ErrorCorrectionCodingPolynomial
 		$this->data(66,"1x66+5x65+118x64+222x63+180x62+136x61+136x60+162x59+51x58+46x57+117x56+13x55+215x54+81x53+17x52+139x51+247x50+197x49+171x48+95x47+173x46+65x45+137x44+178x43+68x42+111x41+95x40+101x39+41x38+72x37+214x36+169x35+197x34+95x33+7x32+44x31+154x30+77x29+111x28+236x27+40x26+121x25+143x24+63x23+87x22+80x21+253x20+240x19+126x18+217x17+77x16+34x15+232x14+106x13+50x12+168x11+82x10+76x9+146x8+67x7+106x6+171x5+25x4+132x3+93x2+45x1+105x0");
 		$this->data(68,"1x68+247x67+159x66+223x65+33x64+224x63+93x62+77x61+70x60+90x59+160x58+32x57+254x56+43x55+150x54+84x53+101x52+190x51+205x50+133x49+52x48+60x47+202x46+165x45+220x44+203x43+151x42+93x41+84x40+15x39+84x38+253x37+173x36+160x35+89x34+227x33+52x32+199x31+97x30+95x29+231x28+52x27+177x26+41x25+125x24+137x23+241x22+166x21+225x20+118x19+2x18+54x17+32x16+82x15+215x14+175x13+198x12+43x11+238x10+235x9+27x8+101x7+184x6+127x5+3x4+5x3+8x2+163x1+238x0");
 	}
-	public function data($eccWords,$polynomialStr)
+	private function data($eccWords,$polynomialStr)
 	{
 		preg_match_all('/\d+x\d++/iUs',$polynomialStr,$arr);
 		$polynomial = new Polynomial;
@@ -60,6 +60,7 @@ class ErrorCorrectionCodingPolynomial
 		}
 		$this->errorCorrectionCodingPolynomial[$eccWords] = $polynomial;
 	}
+	
 	/*
 	* @param int $eccWords 纠错码数
 	*/

@@ -85,10 +85,10 @@ class QRCodeImageGenerate
 		{
 			switch($timing_patterns_dir)
 			{
-				case QRCodeImageGenerate::TIMING_PATTERNS_DIR_HORIZONTAL:
+				case self::TIMING_PATTERNS_DIR_HORIZONTAL:
 					$positions[7 + $i][6] = $i % 2 == 1 ? 1 : 0;
 					break;
-				case QRCodeImageGenerate::TIMING_PATTERNS_DIR_VERTICAL:
+				case self::TIMING_PATTERNS_DIR_VERTICAL:
 					$positions[6][7 + $i] = $i % 2 == 1 ? 1 : 0;
 					break;
 			}
@@ -116,10 +116,10 @@ class QRCodeImageGenerate
 			$ver = $versionInfomation[$i];
 			switch($version_infomation_dir)
 			{
-				case QRCodeImageGenerate::VERSION_INFOMATION_DIR_UP:
+				case self::VERSION_INFOMATION_DIR_UP:
 					$positions[$i%3][$a] = $ver;
 					break;
-				case QRCodeImageGenerate::VERSION_INFOMATION_DIR_DOWN:
+				case self::VERSION_INFOMATION_DIR_DOWN:
 					$positions[$a][$i%3] = $ver;
 					break;
 			}
@@ -145,7 +145,7 @@ class QRCodeImageGenerate
 		$positions = [];
 		switch($formatInfomationDir)
 		{
-			case QRCodeImageGenerate::FORMAT_INFOMATION_DIR_UP://上
+			case self::FORMAT_INFOMATION_DIR_UP://上
 				$a = 0;
 				for($i = 0; $i < strlen($formatInfomation_before); $i++)
 				{
@@ -159,13 +159,13 @@ class QRCodeImageGenerate
 					$a++;
 				}
 				break;
-			case QRCodeImageGenerate::FORMAT_INFOMATION_DIR_DOWN://下
+			case self::FORMAT_INFOMATION_DIR_DOWN://下
 				for($i = 0; $i < strlen($formatInfomation_after); $i++)
 				{
 					$positions[$i][0] = $formatInfomation_after[$i];
 				}
 				break;
-			case QRCodeImageGenerate::FORMAT_INFOMATION_DIR_LEFT://左
+			case self::FORMAT_INFOMATION_DIR_LEFT://左
 				$a = 0;
 				$_formatInfomation_after = strrev($formatInfomation_after);
 				for($i = 0; $i < strlen($_formatInfomation_after); $i++)
@@ -180,7 +180,7 @@ class QRCodeImageGenerate
 					$a++;
 				}
 				break;
-			case QRCodeImageGenerate::FORMAT_INFOMATION_DIR_RIGHT://右
+			case self::FORMAT_INFOMATION_DIR_RIGHT://右
 				$_formatInfomation_before = strrev($formatInfomation_before);
 				for($i = 0; $i < strlen($_formatInfomation_before); $i++)
 				{
@@ -266,26 +266,27 @@ class QRCodeImageGenerate
 		$qrcodeAlignmentPattern = $this->qrcodeAlignmentPattern();
 		$alignmentPattern = new AlignmentPattern;
 		$ap = $alignmentPattern->getAlignmentPattern($version);
-		foreach($ap as $value1)
+		$ap_min =  min($ap);$ap_max =  max($ap);
+		foreach($ap as $ap_v1)
 		{
-			foreach($ap as $value2)
+			foreach($ap as $ap_v2)
 			{
 				//排除位置
 				if(!(
-					($value1 == min($ap) and $value2 == max($ap)) or 
-					($value1 == max($ap) and $value2 == min($ap)) or 
-					($value1 == min($ap) and $value2 == min($ap))
+					($ap_v1 == $ap_min and $ap_v2 == $ap_max) or 
+					($ap_v1 == $ap_max and $ap_v2 == $ap_min) or 
+					($ap_v1 == $ap_min and $ap_v2 == $ap_min)
 				))
 				{
 					//注:得到的'校正图形位置数据'是'模块中心位置数据',故左上角起始点的坐标要-2
-					$this->merge($qrcodeAlignmentPattern,new Point($value1 - 2,$value2 - 2),QRCodeImageType::ALIGNMENT_PATTERN);
+					$this->merge($qrcodeAlignmentPattern,new Point($ap_v1 - 2,$ap_v2 - 2),QRCodeImageType::ALIGNMENT_PATTERN);
 				}
 			}
 		}
 		
 		//Timing Patterns-分隔条
-		$this->merge($this->qrcodeTimingPatterns($version,QRCodeImageGenerate::TIMING_PATTERNS_DIR_HORIZONTAL),new Point(0,0),QRCodeImageType::TIMING_PATTERNS);
-		$this->merge($this->qrcodeTimingPatterns($version,QRCodeImageGenerate::TIMING_PATTERNS_DIR_VERTICAL),new Point(0,0),QRCodeImageType::TIMING_PATTERNS);
+		$this->merge($this->qrcodeTimingPatterns($version,self::TIMING_PATTERNS_DIR_HORIZONTAL),new Point(0,0),QRCodeImageType::TIMING_PATTERNS);
+		$this->merge($this->qrcodeTimingPatterns($version,self::TIMING_PATTERNS_DIR_VERTICAL),new Point(0,0),QRCodeImageType::TIMING_PATTERNS);
 		
 		//dark module-小黑块,坐标:[4 * $version + 9,8]
 		$this->mergeByCoordinate(1,new Point(4 * $version + 9,8),QRCodeImageType::DARK_MODULE);
@@ -295,16 +296,16 @@ class QRCodeImageGenerate
 		if($version >= 7)
 		{
 			$versionInfo = str_pad('',18,1);
-			$this->merge($this->qrcodeVersionInfomation($versionInfo,QRCodeImageGenerate::VERSION_INFOMATION_DIR_DOWN),new Point(0,$this->qrCodeImageLength - 7 - 1 - 3),QRCodeImageType::VERSION_INFOMATION);
-			$this->merge($this->qrcodeVersionInfomation($versionInfo,QRCodeImageGenerate::VERSION_INFOMATION_DIR_UP),new Point($this->qrCodeImageLength - 7 - 1 - 3,0),QRCodeImageType::VERSION_INFOMATION);
+			$this->merge($this->qrcodeVersionInfomation($versionInfo,self::VERSION_INFOMATION_DIR_DOWN),new Point(0,$this->qrCodeImageLength - 7 - 1 - 3),QRCodeImageType::VERSION_INFOMATION);
+			$this->merge($this->qrcodeVersionInfomation($versionInfo,self::VERSION_INFOMATION_DIR_UP),new Point($this->qrCodeImageLength - 7 - 1 - 3,0),QRCodeImageType::VERSION_INFOMATION);
 		}
 		
 		//保留格式信息区
 		$formatInformation = str_pad('',15,1);
-		$this->merge($this->qrcodeFormatInfomation($formatInformation,QRCodeImageGenerate::FORMAT_INFOMATION_DIR_UP),new Point(0,8),QRCodeImageType::FORMAT_INFOMATION);
-		$this->merge($this->qrcodeFormatInfomation($formatInformation,QRCodeImageGenerate::FORMAT_INFOMATION_DIR_DOWN),new Point($this->qrCodeImageLength - 8 + 1,8),QRCodeImageType::FORMAT_INFOMATION);
-		$this->merge($this->qrcodeFormatInfomation($formatInformation,QRCodeImageGenerate::FORMAT_INFOMATION_DIR_LEFT),new Point(8,0),QRCodeImageType::FORMAT_INFOMATION);
-		$this->merge($this->qrcodeFormatInfomation($formatInformation,QRCodeImageGenerate::FORMAT_INFOMATION_DIR_RIGHT),new Point(8,$this->qrCodeImageLength - 8),QRCodeImageType::FORMAT_INFOMATION);
+		$this->merge($this->qrcodeFormatInfomation($formatInformation,self::FORMAT_INFOMATION_DIR_UP),new Point(0,8),QRCodeImageType::FORMAT_INFOMATION);
+		$this->merge($this->qrcodeFormatInfomation($formatInformation,self::FORMAT_INFOMATION_DIR_DOWN),new Point($this->qrCodeImageLength - 8 + 1,8),QRCodeImageType::FORMAT_INFOMATION);
+		$this->merge($this->qrcodeFormatInfomation($formatInformation,self::FORMAT_INFOMATION_DIR_LEFT),new Point(8,0),QRCodeImageType::FORMAT_INFOMATION);
+		$this->merge($this->qrcodeFormatInfomation($formatInformation,self::FORMAT_INFOMATION_DIR_RIGHT),new Point(8,$this->qrCodeImageLength - 8),QRCodeImageType::FORMAT_INFOMATION);
 	}	
 	
 	/**

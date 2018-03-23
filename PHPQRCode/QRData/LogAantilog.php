@@ -304,9 +304,9 @@ class LogAantilog
 	}
 	private function data($logKey,$logValue,$antilogKey = '',$antilogValue = '')
 	{
-		$logAantilog = [];
 		$this->logAantilog['log'][$logKey] = $logValue;//对数:α的指数=>整数
-		$antilogKey !== '' and $antilogValue !== '' and $this->logAantilog['antilog'][$antilogKey] = $antilogValue;//反对数:整数=>α的指数
+		$antilogKey !== '' and $antilogValue !== '' and 
+		$this->logAantilog['antilog'][$antilogKey] = $antilogValue;//反对数:整数=>α的指数
 	}
 	
 	//对数

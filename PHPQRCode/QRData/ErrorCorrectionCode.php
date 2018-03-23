@@ -197,7 +197,7 @@ class ErrorCorrectionCode
 	{
 		return $this->versionErrorCorrectionCode[$version][$ecc]['DataCodeNumber'] * 8;
 	}
-	//纠错码字数
+	//每个块的纠错码字数
 	public function getErrorCorrectingCodeNumber($version,$ecc)
 	{
 		return $this->versionErrorCorrectionCode[$version][$ecc]['ErrorCorrectingCodeNumber'];
