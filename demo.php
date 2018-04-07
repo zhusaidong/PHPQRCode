@@ -8,7 +8,11 @@ require_once('PHPQRCode/__autoload.php');
 
 $text = isset($_GET['text'])?$_GET['text']:'HELLO WORLD';
 
-echo (new \PHPQRCode\PHPQRCode)
-	->createQRCode($text,\PHPQRCode\ErrorCorrectCode::Q)
+use PHPQRCode\PHPQRCode,
+	PHPQRCode\ErrorCorrectCodeLevel;
+
+$phpQRCode = new PHPQRCode;
+echo $phpQRCode
+	->createQRCode($text,ErrorCorrectCodeLevel::M)
 	->setSize(500)
 	->toPng();

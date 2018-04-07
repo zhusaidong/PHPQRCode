@@ -7,15 +7,15 @@
 */
 namespace PHPQRCode;
 
-use PHPQRCode\QRData\FormatInformation,
-	PHPQRCode\QRData\VersionInformation;
+use PHPQRCode\DataSet\FormatInformation,
+	PHPQRCode\DataSet\VersionInformation;
 	
 class QRCodeMask
 {
 	public function __construct()
 	{
 	}
-	public function setQRCodeImage(QRCodeImageGenerate $qrCodeImage)
+	public function setQRCodeImage(QRCodeImage $qrCodeImage)
 	{
 		$qrCodeImageTotals = [];
 		$qrCodeImages = [];
@@ -94,7 +94,7 @@ class QRCodeMask
 	}
 	
 	//4种评分规则
-	public function scoringRules_0(QRCodeImageGenerate $qrCodeImage)
+	public function scoringRules_0(QRCodeImage $qrCodeImage)
 	{
 		$findScore = function($str,$findStr)
 		{
@@ -136,7 +136,7 @@ class QRCodeMask
 		}
 		return $total;
 	}
-	public function scoringRules_1(QRCodeImageGenerate $qrCodeImage)
+	public function scoringRules_1(QRCodeImage $qrCodeImage)
 	{
 		$arr = $qrCodeImage->toArray();
 		$total = 0;
@@ -153,7 +153,7 @@ class QRCodeMask
 		}
 		return $total * 3;
 	}
-	public function scoringRules_2(QRCodeImageGenerate $qrCodeImage)
+	public function scoringRules_2(QRCodeImage $qrCodeImage)
 	{
 		$qrCodeImageArray = $qrCodeImage->toArray();
 		$total = 0;
@@ -175,7 +175,7 @@ class QRCodeMask
 		}
 		return $total * 40;
 	}
-	public function scoringRules_3(QRCodeImageGenerate $qrCodeImage)
+	public function scoringRules_3(QRCodeImage $qrCodeImage)
 	{
 		$qrCodeImageArray = $qrCodeImage->toArray();
 		$total = 0;

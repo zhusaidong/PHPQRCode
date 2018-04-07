@@ -6,7 +6,7 @@
 */
 namespace PHPQRCode;
 
-class ErrorCorrectCode
+class ErrorCorrectCodeLevel
 {
 	const L = 'L';//低
 	const M = 'M';//中

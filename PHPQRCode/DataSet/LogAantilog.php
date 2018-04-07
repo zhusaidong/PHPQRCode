@@ -3,7 +3,7 @@
 * 对数与反对数表
 * @author Zsdroid [635925926@qq.com]
 */
-namespace PHPQRCode\QRData;
+namespace PHPQRCode\DataSet;
 
 class LogAantilog
 {

@@ -5,9 +5,9 @@
 * @author Zsdroid [635925926@qq.com]
 * @version 0.1.0.0
 */
-namespace PHPQRCode\QRMode;
+namespace PHPQRCode\CodeMode;
 
-class Byte extends QRMode implements QRMode_Interface
+class Byte extends CodeMode implements CodeMode_Interface
 {
 	public function __construct()
 	{

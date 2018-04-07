@@ -6,26 +6,26 @@
 */
 namespace PHPQRCode;
 
-use PHPQRCode\QRCodeImageGenerate,
+use PHPQRCode\QRCodeImage,
 	PHPQRCode\DataInMatrix,
 	PHPQRCode\QRCodeMask,
-	PHPQRCode\ErrorCorrectCode,
+	PHPQRCode\ErrorCorrectCodeLevel,
 
-	PHPQRCode\QRMode\QRMode,
-	PHPQRCode\QRMode\Number,
-	PHPQRCode\QRMode\Letter,
-	PHPQRCode\QRMode\Mix,
-	PHPQRCode\QRMode\Chinese,
-	PHPQRCode\QRMode\Binary,
+	PHPQRCode\CodeMode\CodeMode,
+	PHPQRCode\CodeMode\Number,
+	PHPQRCode\CodeMode\Letter,
+	PHPQRCode\CodeMode\Mix,
+	PHPQRCode\CodeMode\Chinese,
+	PHPQRCode\CodeMode\Binary,
 
-	PHPQRCode\QRData\DataCapacity,
-	PHPQRCode\QRData\RemainderBits,
-	PHPQRCode\QRData\ErrorCorrectionCode,
-	PHPQRCode\QRData\ErrorCorrectionCodingPolynomial,
-	PHPQRCode\QRData\AlignmentPattern,
-	PHPQRCode\QRData\FormatInformation,
-	PHPQRCode\QRData\VersionInformation,
-	PHPQRCode\QRData\LogAantilog;
+	PHPQRCode\DataSet\DataCapacity,
+	PHPQRCode\DataSet\RemainderBits,
+	PHPQRCode\DataSet\ErrorCorrectionCode,
+	PHPQRCode\DataSet\ErrorCorrectionCodingPolynomial,
+	PHPQRCode\DataSet\AlignmentPattern,
+	PHPQRCode\DataSet\FormatInformation,
+	PHPQRCode\DataSet\VersionInformation,
+	PHPQRCode\DataSet\LogAantilog;
 
 class QRCodeGenerate
 {
@@ -36,7 +36,7 @@ class QRCodeGenerate
 	/**
 	* @var 二维码Mode
 	*/
-	private $qrCodeMode = null;
+	private $codeMode = null;
 	/**
 	* @var 二维码掩码
 	*/
@@ -51,10 +51,10 @@ class QRCodeGenerate
 	*/
 	public function DataAnalysis()
 	{
-		$this->qrCodeMode = (new QRMode)->getMode($this->qrCodeObject->content);
+		$this->codeMode = CodeMode::getMode($this->qrCodeObject->content);
 		//根据数据容量获取二维码版本
-		$this->qrCodeObject->version = (new DataCapacity)->getVersion(strlen($this->qrCodeObject->content),$this->qrCodeObject->errorCorrectCode,$this->qrCodeMode->getClassName());
-		$this->qrCodeMode->setVersion($this->qrCodeObject->version);
+		$this->qrCodeObject->version = (new DataCapacity)->getVersion(strlen($this->qrCodeObject->content),$this->qrCodeObject->errorCorrectionCodeLevel,$this->codeMode->getClassName());
+		$this->codeMode->setVersion($this->qrCodeObject->version);
 		return $this;
 	}
 	/**
@@ -62,8 +62,8 @@ class QRCodeGenerate
 	*/
 	public function DataEncodation()
 	{
-		$this->qrCodeMode->setMaxBitLength((new ErrorCorrectionCode)->getDataCodeNumber($this->qrCodeObject->version,$this->qrCodeObject->errorCorrectCode));
-		$this->qrCodeObject->bits = $this->qrCodeMode->DataEncodation();
+		$this->codeMode->setMaxBitLength((new ErrorCorrectionCode)->getDataCodeNumber($this->qrCodeObject->version,$this->qrCodeObject->errorCorrectionCodeLevel));
+		$this->qrCodeObject->contentBits = $this->codeMode->DataEncodation();
 		return $this;
 	}
 	/**
@@ -74,17 +74,14 @@ class QRCodeGenerate
 		$polynomial = new Polynomial;
 		
 		$data = [];
-		foreach(str_split($this->qrCodeObject->bits,8) as $value)
+		foreach(str_split($this->qrCodeObject->contentBits,8) as $value)
 		{
 			$data[] = base_convert($value,2,10);
 		}
 		
 		//纠错码字数
 		$ecc = new ErrorCorrectionCode;
-		$eccNumber = $ecc->getErrorCorrectingCodeNumber($this->qrCodeObject->version,$this->qrCodeObject->errorCorrectCode);
-		//$eccBlocks = $ecc->getErrorCorrectingCodeBlocks($this->qrCodeObject->version,$this->qrCodeObject->errorCorrectCode);
-		//$eccBlocksNumber = count($eccBlocks['ErrorCorrectingCodeBlocks_1']) + count($eccBlocks['ErrorCorrectingCodeBlocks_2']);
-		//$eccNumber *= $eccBlocksNumber;
+		$eccNumber = $ecc->getErrorCorrectingCodeNumber($this->qrCodeObject->version,$this->qrCodeObject->errorCorrectionCodeLevel);
 		
 		foreach($data as $key => $value)
 		{
@@ -112,7 +109,7 @@ class QRCodeGenerate
 		{
 			$errorCodeBits .= str_pad(base_convert($value,10,2),8,0,STR_PAD_LEFT);
 		}
-		$this->qrCodeObject->errorCodeBits = $errorCodeBits;
+		$this->qrCodeObject->errorCorrectionCodeBits = $errorCodeBits;
 		return $this;
 	}
 	/**
@@ -149,25 +146,25 @@ class QRCodeGenerate
 	*/
 	public function StructureFinalMessage()
 	{
-		$eccBlocks = (new ErrorCorrectionCode)->getErrorCorrectingCodeBlocks($this->qrCodeObject->version,$this->qrCodeObject->errorCorrectCode);
+		$eccBlocks = (new ErrorCorrectionCode)->getErrorCorrectingCodeBlocks($this->qrCodeObject->version,$this->qrCodeObject->errorCorrectionCodeLevel);
 		if(count($eccBlocks['ErrorCorrectingCodeBlocks_1']) == 1 and count($eccBlocks['ErrorCorrectingCodeBlocks_2']) == 0)
 		{
 			//较小版本的二维码仅包括一个数据码字块，具有用于该块的一组纠错码字。在这种情况下，不需要交替排列。只需将纠错码字放置在数据码字之后
-			$this->qrCodeObject->finalBits = $this->qrCodeObject->bits . $this->qrCodeObject->errorCodeBits;
+			$this->qrCodeObject->finalBits = $this->qrCodeObject->contentBits . $this->qrCodeObject->errorCorrectionCodeBits;
 		}
 		else
 		{
 			//较大版本的二维码需要分组交替排列
 			$eccBlocks = array_merge_recursive($eccBlocks['ErrorCorrectingCodeBlocks_1'],$eccBlocks['ErrorCorrectingCodeBlocks_2']);
 			
-			$bit = $this->qrCodeObject->bits;
+			$bit = $this->qrCodeObject->contentBits;
 			$bits = str_split($bit,8);
 			foreach($bits as $key => $value)
 			{
 				$bits[$key] = base_convert($value,2,10);
 			}
 			
-			$errorCodeBit = $this->qrCodeObject->errorCodeBits;
+			$errorCodeBit = $this->qrCodeObject->errorCorrectionCodeBits;
 			$errorCodeBits = str_split($errorCodeBit,8);
 			foreach($errorCodeBits as $key => $value)
 			{
@@ -222,7 +219,7 @@ class QRCodeGenerate
 	*/
 	public function ModulePlacementInMatrix()
 	{
-		$qrCodeImage = new QRCodeImageGenerate($this->qrCodeObject->version);
+		$qrCodeImage = new QRCodeImage($this->qrCodeObject->version);
 		$qrCodeImage->createQRCodeImage();
 		$qrCodeImage->initQRCodeImage($this->qrCodeObject->version);
 		
@@ -238,7 +235,7 @@ class QRCodeGenerate
 	/**
 	* Step 5.1 在矩阵中布置模块-蛇形数据处理
 	*/
-	private function DataInMatrix(QRCodeImageGenerate $qrCodeImage)
+	private function DataInMatrix(QRCodeImage $qrCodeImage)
 	{
 		$finalBits = $this->qrCodeObject->finalBits;
 		$finalBits = str_split($finalBits,1);
@@ -341,21 +338,21 @@ class QRCodeGenerate
 		if($version >= 7)
 		{
 			$versionInfo = (new VersionInformation)->getVersionInformation($version);
-			
-			$image->merge($image->qrcodeVersionInfomation($versionInfo,QRCodeImageGenerate::VERSION_INFOMATION_DIR_DOWN),new Point(0,$qrImageLength - 7 - 1 - 3));
-			$image->merge($image->qrcodeVersionInfomation($versionInfo,QRCodeImageGenerate::VERSION_INFOMATION_DIR_UP),new Point($qrImageLength - 7 - 1 - 3,0));
+			$version_infomation_up = $image->qrcodeVersionInfomation($versionInfo);
+			$version_infomation_down = $image->rotate($version_infomation_up);
+			$image->merge($version_infomation_down,new Point(0,$qrImageLength - 7 - 1 - 3));
+			$image->merge($version_infomation_up,new Point($qrImageLength - 7 - 1 - 3,0));
 		}
 		
 		//保留格式信息区
-		$formatInfo = (new FormatInformation)->getFormatInformation($this->qrCodeObject->errorCorrectCode,$this->qrCodeMask['mask']);
-		
-		$image->merge($image->qrcodeFormatInfomation($formatInfo,QRCodeImageGenerate::FORMAT_INFOMATION_DIR_UP),new Point(0,8));
-		$image->merge($image->qrcodeFormatInfomation($formatInfo,QRCodeImageGenerate::FORMAT_INFOMATION_DIR_DOWN),new Point($qrImageLength - 8 + 1,8));
-		$image->merge($image->qrcodeFormatInfomation($formatInfo,QRCodeImageGenerate::FORMAT_INFOMATION_DIR_LEFT),new Point(8,0));
-		$image->merge($image->qrcodeFormatInfomation($formatInfo,QRCodeImageGenerate::FORMAT_INFOMATION_DIR_RIGHT),new Point(8,$qrImageLength - 8));
+		$formatInfo = (new FormatInformation)->getFormatInformation($this->qrCodeObject->errorCorrectionCodeLevel,$this->qrCodeMask['mask']);
+		$image->merge($image->qrcodeFormatInfomation($formatInfo,QRCodeImage::FORMAT_INFOMATION_DIR_UP),new Point(0,8));
+		$image->merge($image->qrcodeFormatInfomation($formatInfo,QRCodeImage::FORMAT_INFOMATION_DIR_DOWN),new Point($qrImageLength - 8 + 1,8));
+		$image->merge($image->qrcodeFormatInfomation($formatInfo,QRCodeImage::FORMAT_INFOMATION_DIR_LEFT),new Point(8,0));
+		$image->merge($image->qrcodeFormatInfomation($formatInfo,QRCodeImage::FORMAT_INFOMATION_DIR_RIGHT),new Point(8,$qrImageLength - 8));
 		
 		//二维码周围添加2格空白
-		$whiteImage = new QRCodeImageGenerate($version);
+		$whiteImage = new QRCodeImage($version);
 		$whiteImage->createQRCodeImageByLength($whiteImage->getQRCodeImageLength() + 4);
 		$whiteImage->merge($image->toArray(),new Point(2,2));
 		

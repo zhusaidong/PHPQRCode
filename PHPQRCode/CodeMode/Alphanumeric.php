@@ -4,9 +4,9 @@
 * @author Zsdroid [635925926@qq.com]
 * @version 0.1.0.0
 */
-namespace PHPQRCode\QRMode;
+namespace PHPQRCode\CodeMode;
 
-class Alphanumeric extends QRMode implements QRMode_Interface
+class Alphanumeric extends CodeMode implements CodeMode_Interface
 {
 	private static $strLists = ['0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z',' ','$','%','*','+','-','.','/',':'];
 	private $bitLengthConfig = [1=>6,2=>11];

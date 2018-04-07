@@ -2,14 +2,11 @@
 /**
 * 纠错码字
 * @author Zsdroid [635925926@qq.com]
-* @package com.zsdroid
-* @since 
-* @access public
 * @version 0.1.0.0
 */
-namespace PHPQRCode\QRData;
+namespace PHPQRCode\DataSet;
 
-use \PHPQRCode\ErrorCorrectCode as ecc;
+use \PHPQRCode\ErrorCorrectCodeLevel as ecc;
 
 class ErrorCorrectionCode
 {

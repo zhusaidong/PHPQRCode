@@ -19,7 +19,7 @@ class QRCodeObject
 	/**
 	* @var 纠错码级别
 	*/
-	public $errorCorrectCode = null;
+	public $errorCorrectionCodeLevel = null;
 	/**
 	* @var 内容
 	*/
@@ -27,11 +27,15 @@ class QRCodeObject
 	/**
 	* @var 内容二进制
 	*/
-	public $bits = null;
+	public $contentBits = null;
+	/**
+	* @var 纠错码
+	*/
+	public $errorCorrectionCode = null;
 	/**
 	* @var 纠错码二进制
 	*/
-	public $errorCodeBits = null;
+	public $errorCorrectionCodeBits = null;
 	/**
 	* @var 总二进制
 	*/

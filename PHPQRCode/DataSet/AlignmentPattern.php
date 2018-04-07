@@ -5,7 +5,7 @@
 * @author Zsdroid [635925926@qq.com]
 * @version 0.1.0.0
 */
-namespace PHPQRCode\QRData;
+namespace PHPQRCode\DataSet;
 
 class AlignmentPattern
 {

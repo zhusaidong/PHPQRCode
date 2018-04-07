@@ -4,9 +4,9 @@
 * @author Zsdroid [635925926@qq.com]
 * @version 0.1.0.0
 */
-namespace PHPQRCode\QRMode;
+namespace PHPQRCode\CodeMode;
 
-class QRMode
+abstract class CodeMode
 {
 	//指示符
 	protected $indicator = '';
@@ -91,15 +91,14 @@ class QRMode
 	*/
 	protected function getCharacterCountIndicatorLength()
 	{
-		$length = 0;
 		foreach($this->characterCountIndicator as $key => $value)
 		{
 			if($key <= $this->version)
 			{
-				$length = $value;
+				return $value;
 			}
 		}
-		return $length;
+		return 0;
 	}
 	
 	/**
@@ -119,30 +118,29 @@ class QRMode
 	* get mode
 	* @param string $text
 	*/
-	public function getMode($text)
+	public static function getMode($text)
 	{
-		$qrMode = null;
+		$codeMode = null;
 		switch($text)
 		{
 			case self::isNumeric($text):
-				$qrMode = new Numeric();
+				$codeMode = new Numeric();
 				break;
 			case self::isAlphanumeric($text):
-				$qrMode = new Alphanumeric();
+				$codeMode = new Alphanumeric();
 				break;
 			case self::isKanji($text):
-				$qrMode = new Kanji();
+				$codeMode = new Kanji();
 				break;
 			case self::isByte($text):
-				$qrMode = new Byte();
+				$codeMode = new Byte();
 				break;
 		}
-		if(empty($qrMode))
+		if(empty($codeMode))
 		{
 			echo 'no support context!';exit;
 		}
-		//$qrMode = new Byte();
-		return $qrMode->setData($text);
+		return $codeMode->setData($text);
 	}
 	
 	/**

@@ -1,12 +1,12 @@
 <?php
 /**
-* QRMode_Interface
+* CodeMode_Interface
 * @author Zsdroid [635925926@qq.com]
 * @version 0.1.0.0
 */
-namespace PHPQRCode\QRMode;
+namespace PHPQRCode\CodeMode;
 
-interface QRMode_Interface
+interface CodeMode_Interface
 {
 	/**
 	* 设置数据
