@@ -3,7 +3,7 @@
 * 多项式
 * @author Zsdroid [635925926@qq.com]
 */
-namespace PHPQRCode;
+namespace PHPQRCode\ReedSolomon;
 
 class Polynomial
 {
@@ -21,24 +21,26 @@ class Polynomial
 	public function setExpressionLetters($expressionLetters)
 	{
 		$this->expressionLetters = $expressionLetters;
+		return $this;
 	}
 	public function setSimplyMode($simplyMode)
 	{
 		$this->simplyMode = $simplyMode;
+		return $this;
 	}
 	
 	/**
 	* 设置多项式
-	* @param int $polynomial_exponent 多项式指数
-	* @param double $polynomial_coefficient 多项式系数
+	* @param int $exponent 多项式指数
+	* @param double $coefficient 多项式系数
 	* 
 	* @return Polynomial
 	*/
-	public function setPolynomial($polynomial_exponent,$polynomial_coefficient)
+	public function setPolynomial($exponent,$coefficient)
 	{
 		$this->polynomial[] = [
-			'exponent' 		=>$polynomial_exponent,
-			'coefficient' 	=>$polynomial_coefficient,
+			'exponent' 	 =>$exponent,
+			'coefficient'=>$coefficient,
 		];
 		return $this;
 	}
@@ -52,11 +54,7 @@ class Polynomial
 		usort($this->polynomial,
 			function($a,$b)
 			{
-				if($a['exponent'] >= $b['exponent'])
-				{
-					return -1;
-				}
-				return 1;
+				return $a['exponent'] >= $b['exponent']?-1:1;
 			});
 		return $this->polynomial;
 	}

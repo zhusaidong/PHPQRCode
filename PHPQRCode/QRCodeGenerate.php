@@ -25,7 +25,10 @@ use PHPQRCode\QRCodeImage,
 	PHPQRCode\DataSet\AlignmentPattern,
 	PHPQRCode\DataSet\FormatInformation,
 	PHPQRCode\DataSet\VersionInformation,
-	PHPQRCode\DataSet\LogAantilog;
+	
+	PHPQRCode\ReedSolomon\LogAantilog,
+	PHPQRCode\ReedSolomon\Polynomial,
+	PHPQRCode\ReedSolomon\ReedSolomon;
 
 class QRCodeGenerate
 {
@@ -91,18 +94,24 @@ class QRCodeGenerate
 		//多项式除法
 		$eccPolynomial = (new ErrorCorrectionCodingPolynomial)->getErrorCorrectionCodingPolynomial($eccNumber);
 		
-		if($debugPolynomial)echo 'eccPolynomial：'.$eccPolynomial."<br>\n";
+		if($debugPolynomial)echo 'eccPolynomial：'.$eccPolynomial."<br>\n";//debug
 		//重复执行步骤(数据码字的数量)的次。
 		for($i = 0; $i < count($data); $i++)
 		{
-			if($debugPolynomial)echo '第'.($i + 1).'次运算:'."<br>\n";
-			if($debugPolynomial)echo '被除数：'.$polynomial."<br>\n";
+			if($debugPolynomial)echo '第'.($i + 1).'次运算:'."<br>\n";//debug
+			if($debugPolynomial)echo '被除数：'.$polynomial."<br>\n";//debug
 			$polynomialDivisor = $this->PolynomialCalc($polynomial,$eccPolynomial);
 			$polynomial->division($polynomialDivisor);
-			if($debugPolynomial)echo '除数：'.$polynomialDivisor."<br>\n";
-			if($debugPolynomial)echo '结果：'.$polynomial."<br>\n";
+			if($debugPolynomial)echo '除数：'.$polynomialDivisor."<br>\n";//debug
+			if($debugPolynomial)echo '结果：'.$polynomial."<br>\n";//debug
+			
+			$_polynomial = array_keys($polynomial->toArray());
+			if(end($_polynomial) == 0)
+			{
+				break;
+			}
 		}
-		if($debugPolynomial)exit();
+		if($debugPolynomial)exit();//debug
 		
 		$errorCodeBits = '';
 		foreach($polynomial->toArray() as $value)

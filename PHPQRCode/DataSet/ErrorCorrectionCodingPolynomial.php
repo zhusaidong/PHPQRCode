@@ -6,7 +6,7 @@
 */
 namespace PHPQRCode\DataSet;
 
-use PHPQRCode\Polynomial;
+use PHPQRCode\ReedSolomon\Polynomial;
 
 class ErrorCorrectionCodingPolynomial
 {

@@ -3,7 +3,7 @@
 * 对数与反对数表
 * @author Zsdroid [635925926@qq.com]
 */
-namespace PHPQRCode\DataSet;
+namespace PHPQRCode\ReedSolomon;
 
 class LogAantilog
 {
@@ -11,8 +11,52 @@ class LogAantilog
 	
 	public function __construct()
 	{
-		$this->init();
+		$this->logAantilog['log'] 	  = $this->createLogData();
+		$this->logAantilog['antilog'] = $this->createAntilogData();
 	}
+	//方法1
+	private function createLogData()
+	{
+		$x = 0;
+		$arr = [];
+		for($i = 0; $i < pow(2,8); $i++)
+		{
+			if($x > 0)
+			{
+				$a = $arr[$x] * 2;
+				$x = $i;
+				if($a > 256)
+				{
+					$x = 0;
+				}
+			}
+			else
+			{
+				$a = pow(2,$i);
+			}
+			
+			if($x == 0 and $a >= 256)
+			{
+				$a = $a ^ 285;
+				$x = $i;
+			}
+			$arr[$i] = $a;
+		}
+		return $arr;
+	}
+	private function createAntilogData()
+	{
+		$log = $this->logAantilog['log'];
+		$antilog = [];
+		foreach($log as $key => $value)
+		{
+			$antilog[$value] = $key == 255 ? 0 : $key;
+		}
+		ksort($antilog);
+		return $antilog;
+	}
+	
+	//方法2
 	private function init()
 	{
 		$this->data(0,1,'','');
@@ -271,36 +315,6 @@ class LogAantilog
 		$this->data(253,71,253,80);
 		$this->data(254,142,254,88);
 		$this->data(255,1,255,175);
-	}
-	//todo 生成数据
-	private function createLogData()
-	{
-		$x = 0;
-		$arr = [];
-		for($i = 0; $i < pow(2,8); $i++)
-		{
-			if($x > 0)
-			{
-				$a = $arr[$x] * 2;
-				$x = $i;
-				if($a > 256)
-				{
-					$x = 0;
-				}
-			}
-			else
-			{
-				$a = pow(2,$i);
-			}
-			
-			if($x == 0 and $a >= 256)
-			{
-				$a = $a ^ 285;
-				$x = $i;
-			}
-			$arr[$i] = $a;
-		}
-		return $arr;
 	}
 	private function data($logKey,$logValue,$antilogKey = '',$antilogValue = '')
 	{
