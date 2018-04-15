@@ -42,6 +42,15 @@ class LogAantilog
 			}
 			$arr[$i] = $a;
 		}
+		
+		/*
+		//双倍指数表大小可以省去为了不出界而取模255的运算
+		for($i = 255; $i < 512; $i++)
+		{
+			$arr[$i] = $arr[$i - 255];
+		}
+		*/
+		
 		return $arr;
 	}
 	private function createAntilogData()
@@ -49,7 +58,9 @@ class LogAantilog
 		$log = $this->logAantilog['log'];
 		$antilog = [];
 		foreach($log as $key => $value)
+		//for($key = 0; $key < 256; $key++)
 		{
+			//$value = $log[$key];
 			$antilog[$value] = $key == 255 ? 0 : $key;
 		}
 		ksort($antilog);

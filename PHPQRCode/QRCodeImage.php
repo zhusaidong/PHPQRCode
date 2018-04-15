@@ -27,6 +27,7 @@ class QRCodeImage
 	*/
 	private $qrCodeImageLength = 0;
 	private $toQRCode = FALSE;
+	private $toColor = FALSE;
 	
 	public function __construct($version = 0)
 	{
@@ -375,37 +376,42 @@ class QRCodeImage
 		return $this;
 	}
 	/**
+	* 转成二维码显示方式
+	*/
+	public function toColor()
+	{
+		$this->toColor = TRUE;
+		return $this;
+	}
+	/**
 	* __toString
 	*/
 	public function __toString()
 	{
-		$str = '';
-		$str .= '<table style="text-align:center;" border="0" cellpadding="0" cellspacing="0">'."\n";
+		$str = '<table style="text-align:center;" border="0" cellpadding="0" cellspacing="0">'."\n";
 		foreach($this->qrCodeImage as $i => $value)
 		{
 			$str .= '<tr>'."\n";
 			foreach($value as $j => $v)
 			{
-				if($v['bit'] == 1)
-				{
-					$bgcolor = ' style="background-color:#000000;"';
-					$textcolor = ' style="color:#ffffff;"';
-				}
-				//debug
-				else if($v['bit'] > 1)
+				$textcolor = '';
+				$bgcolor = '';
+				if($this->toColor and $v['type'] === QRCodeImageType::DATA)
 				{
 					$bgcolor = ' style="background-color:#ff0000;"';
-					$textcolor = ' style="color:#ffffff;"';
 				}
 				else
 				{
-					$textcolor = '';
-					$bgcolor = '';
+					if($v['bit'] == 1)
+					{
+						$bgcolor = ' style="background-color:#000000;"';
+						$textcolor = ' style="color:#ffffff;"';
+					}
 				}
 				
 				if($this->toQRCode)
 				{
-					$str .= '<td'.$bgcolor.' style="width:21px;height:21px;">';
+					$str .= '<td'.$bgcolor.' title="'.$v['point'].'" style="width:21px;height:21px;">';
 				}
 				else
 				{
@@ -414,7 +420,7 @@ class QRCodeImage
 				
 				if($this->toQRCode)
 				{
-					$str .= '<span'.$textcolor.' title="'.$v['point'].'">&nbsp;</span>';
+					$str .= '<span'.$textcolor.'>&nbsp;</span>';
 				}
 				else
 				{

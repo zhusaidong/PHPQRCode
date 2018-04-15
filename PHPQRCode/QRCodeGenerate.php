@@ -377,6 +377,13 @@ class QRCodeGenerate
 	{
 		return $this->getQRCodeObject()->qrCodeImage->toQRCode();
 	}
+	/**
+	* debug 输出html二维码
+	*/
+	public function toColor()
+	{
+		return $this->getQRCodeObject()->qrCodeImage->toColor();
+	}
 	
 	/**
 	* getQRCodeObject
