@@ -15,15 +15,14 @@ exit;
 
 $text = isset($_GET['text'])?$_GET['text']:'HELLO WORLD';
 
-$text = '1505772536615057725366';
-//$text = 'abcdefghi';
-//$text = 'http://localhost/PHPQRCode/demo.php';
+$text = 'Hello, world! 123';
+$text = 'http://localhost/PHPQRCode/demo.php';
 
 use PHPQRCode\PHPQRCode,
 	PHPQRCode\ErrorCorrectCodeLevel as ecl;
 
 $phpQRCode = new PHPQRCode;
 echo $phpQRCode
-	->createQRCode($text,ecl::M)
+	->createQRCode($text,ecl::L)
 	->setSize(500)
 	->toPng();

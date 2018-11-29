@@ -12,16 +12,37 @@ use PHPQRCode\DataSet\FormatInformation,
 	
 class QRCodeMask
 {
-	public function __construct()
+	private function FormatAndVersionInformation($image,$version,$errorCorrectionCodeLevel,$mask)
 	{
+		$qrImageLength = $image->getQRCodeImageLength();
+		//保留版本信息区:二维码版本7以上包含两个版本信息
+		if($version >= 7)
+		{
+			$versionInfo = (new VersionInformation)->getVersionInformation($version);
+			$version_infomation_up = $image->qrcodeVersionInfomation($versionInfo);
+			$version_infomation_down = $image->rotate($version_infomation_up);
+			$image->merge($version_infomation_down,new Point(0,$qrImageLength - 7 - 1 - 3));
+			$image->merge($version_infomation_up,new Point($qrImageLength - 7 - 1 - 3,0));
+		}
+		
+		//保留格式信息区
+		$formatInfo = (new FormatInformation)->getFormatInformation($errorCorrectionCodeLevel,$mask);
+		$image->merge($image->qrcodeFormatInfomation($formatInfo,QRCodeImage::FORMAT_INFOMATION_DIR_UP),new Point(0,8));
+		$image->merge($image->qrcodeFormatInfomation($formatInfo,QRCodeImage::FORMAT_INFOMATION_DIR_DOWN),new Point($qrImageLength - 8 + 1,8));
+		$image->merge($image->qrcodeFormatInfomation($formatInfo,QRCodeImage::FORMAT_INFOMATION_DIR_LEFT),new Point(8,0));
+		$image->merge($image->qrcodeFormatInfomation($formatInfo,QRCodeImage::FORMAT_INFOMATION_DIR_RIGHT),new Point(8,$qrImageLength - 8));
+		return $image;
 	}
-	public function setQRCodeImage(QRCodeImage $qrCodeImage)
+	public function setQRCodeImage(QRCodeObject $qRCodeObject,$debug = FALSE)
 	{
-		$qrCodeImageTotals = [];
+		$qrCodeImage = $qRCodeObject->qrCodeImage;
+		
+		$scores = $scoresTotals = [];
 		$qrCodeImages = [];
 		for($k = 0; $k < 8; $k++)
 		{
 			$_temp = clone $qrCodeImage;
+			$_temp = $this->FormatAndVersionInformation($_temp,$qRCodeObject->version,$qRCodeObject->errorCorrectionCodeLevel,$k);
 			$image = $_temp->getQRCodeImage();
 			for($i = 0; $i < count($image); $i++)
 			{
@@ -36,65 +57,46 @@ class QRCodeMask
 			}
 			
 			$qrCodeImages[$k] = $_temp;
-			$qrCodeImageTotals[$k] = 0;
 			for($i = 0; $i < 4; $i++)
 			{
-				$qrCodeImageTotals[$k] += call_user_func_array([$this,'scoringRules_'.$i],[$_temp]);
+				$scoresTotals[$k][$i] = call_user_func_array([$this,'scoringRules_'.$i],[$_temp]);
 			}
+			$scores[$k] = array_sum($scoresTotals[$k]);
 		}
-		uasort($qrCodeImageTotals,function($a,$b){return $a - $b <= 0 ? - 1 : 1;});
+		//uasort($scoresTotals,function($a,$b){return $a - $b <= 0 ? - 1 : 1;});
 		
 		//debug
-		//var_dump($qrCodeImageTotals);foreach($qrCodeImageTotals as $key => $value)echo '掩码:',$key.'=>'.'值:'.$value.$qrCodeImages[$key]->toQRCode();exit;
+		if($debug)
+		{
+			var_dump($scoresTotals);
+			foreach($scores as $key => $value)
+			{
+				echo '第'.$key.'种掩码:'.$scores[$key].$qrCodeImages[$key]->toQRCode();
+			}
+			exit;
+		}
 		
-		$minMask = array_search(min($qrCodeImageTotals),$qrCodeImageTotals);
-		return [
-			'mask'		 =>$minMask,
-			'qrCodeImage'=>$qrCodeImages[$minMask],
-		];
+		$minMask = array_search(min($scores),$scores);
+		return $qrCodeImages[$minMask];
 	}
 	
 	//8种掩码模式
-	public function mode($mode = 0,$i,$j,$value)
+	private function mode($mode = 0,$i,$j,$value)
 	{
-		$_v = -1;
-		switch($mode)
-		{
-			case 0:
-				$_v = ($i + $j) % 2;
-				break;
-			case 1:
-				$_v = $j % 2;
-				break;
-			case 2:
-				$_v = $i % 3;
-				break;
-			case 3:
-				$_v = ($i + $j) % 3;
-				break;
-			case 4:
-				$_v = ( floor($j / 2) + floor($i / 3) ) % 2;
-				break;
-			case 5:
-				$_v = (($i * $j) % 2) + (($i * $j) % 3);
-				break;
-			case 6:
-				$_v = ( (($i * $j) % 2) + (($i * $j) % 3) ) % 2;
-				break;
-			case 7:
-				$_v = ( (($i + $j) % 2) + (($i * $j) % 3) ) % 2;
-				break;
-		}
-		//return ($_v == 0)?1:0;
-		if($_v == 0)
-		{
-			return $value ^ 1;
-		}
-		return $value;
+		$modes = [
+			function($i,$j){return ($i + $j) % 2;},
+			function($i,$j){return $i % 2;},
+			function($i,$j){return $j % 3;},
+			function($i,$j){return ($i + $j) % 3;},
+			function($i,$j){return ( floor($i / 2) + floor($j / 3) ) % 2;},
+			function($i,$j){return (($i * $j) % 2) + (($i * $j) % 3);},
+			function($i,$j){return ( (($i * $j) % 2) + (($i * $j) % 3) ) % 2;},
+			function($i,$j){return ( (($i + $j) % 2) + (($i * $j) % 3) ) % 2;},
+		];
+		return call_user_func_array($modes[$mode],[$i,$j]) == 0 ? $value ^ 1 : $value;
 	}
-	
 	//4种评分规则
-	public function scoringRules_0(QRCodeImage $qrCodeImage)
+	private function scoringRules_0(QRCodeImage $qrCodeImage)
 	{
 		$findScore = function($str,$findStr)
 		{
@@ -113,7 +115,6 @@ class QRCodeMask
 			}
 			return $total;
 		};
-		
 		$qrCodeImageArray = $qrCodeImage->toArray();
 		$total = 0;
 		foreach($qrCodeImageArray as $value)
@@ -136,7 +137,7 @@ class QRCodeMask
 		}
 		return $total;
 	}
-	public function scoringRules_1(QRCodeImage $qrCodeImage)
+	private function scoringRules_1(QRCodeImage $qrCodeImage)
 	{
 		$arr = $qrCodeImage->toArray();
 		$total = 0;
@@ -145,7 +146,7 @@ class QRCodeMask
 			for($j = 0; $j < count($arr) - 1; $j++)
 			{
 				$sum = $arr[$i][$j] + $arr[$i + 1][$j] + $arr[$i][$j + 1] + $arr[$i + 1][$j + 1];
-				if($sum == 0 or $sum == 4)
+				if($sum % 4 == 0)
 				{
 					$total++;
 				}
@@ -153,16 +154,19 @@ class QRCodeMask
 		}
 		return $total * 3;
 	}
-	public function scoringRules_2(QRCodeImage $qrCodeImage)
+	private function scoringRules_2(QRCodeImage $qrCodeImage)
 	{
 		$qrCodeImageArray = $qrCodeImage->toArray();
 		$total = 0;
+		//横向查找
 		foreach($qrCodeImageArray as $value)
 		{
 			$values = implode('',$value);
 			
-			$total += substr_count($values,'1011101');
+			$total += substr_count($values,'10111010000');
+			$total += substr_count($values,'00001011101');
 		}
+		//纵向查找
 		foreach($qrCodeImageArray as $key => $value)
 		{
 			$values = '';
@@ -170,12 +174,12 @@ class QRCodeMask
 			{
 				$values .= $v[$key];
 			}
-			
-			$total += substr_count($values,'1011101');
+			$total += substr_count($values,'10111010000');
+			$total += substr_count($values,'00001011101');
 		}
 		return $total * 40;
 	}
-	public function scoringRules_3(QRCodeImage $qrCodeImage)
+	private function scoringRules_3(QRCodeImage $qrCodeImage)
 	{
 		$qrCodeImageArray = $qrCodeImage->toArray();
 		$total = 0;

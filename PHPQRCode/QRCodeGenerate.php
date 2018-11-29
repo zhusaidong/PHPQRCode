@@ -220,7 +220,7 @@ class QRCodeGenerate
 		}
 		
 		//添加 RemainderBits
-		$this->qrCodeObject->finalBits .= str_pad('',(new RemainderBits)->getRemainderBits($this->qrCodeObject->version),0,STR_PAD_RIGHT);
+		//$this->qrCodeObject->finalBits .= str_pad('',(new RemainderBits)->getRemainderBits($this->qrCodeObject->version),0,STR_PAD_RIGHT);
 		return $this;
 	}
 	/**
@@ -328,7 +328,7 @@ class QRCodeGenerate
 	*/
 	public function Masking()
 	{
-		$this->qrCodeMask = (new QRCodeMask)->setQRCodeImage($this->qrCodeObject->qrCodeImage);
+		$this->qrCodeMask = (new QRCodeMask)->setQRCodeImage($this->qrCodeObject);
 		return $this;
 	}
 	/**
@@ -336,34 +336,10 @@ class QRCodeGenerate
 	*/
 	public function FormatAndVersionInformation()
 	{
-		$version = $this->qrCodeObject->version;
-		$image = $this->qrCodeMask['qrCodeImage'];
-		
-		//debug
-		//echo $this->qrCodeMask['mask'].$image->toQRCode();exit;
-		
-		$qrImageLength = $image->getQRCodeImageLength();
-		//保留版本信息区:二维码版本7以上包含两个版本信息
-		if($version >= 7)
-		{
-			$versionInfo = (new VersionInformation)->getVersionInformation($version);
-			$version_infomation_up = $image->qrcodeVersionInfomation($versionInfo);
-			$version_infomation_down = $image->rotate($version_infomation_up);
-			$image->merge($version_infomation_down,new Point(0,$qrImageLength - 7 - 1 - 3));
-			$image->merge($version_infomation_up,new Point($qrImageLength - 7 - 1 - 3,0));
-		}
-		
-		//保留格式信息区
-		$formatInfo = (new FormatInformation)->getFormatInformation($this->qrCodeObject->errorCorrectionCodeLevel,$this->qrCodeMask['mask']);
-		$image->merge($image->qrcodeFormatInfomation($formatInfo,QRCodeImage::FORMAT_INFOMATION_DIR_UP),new Point(0,8));
-		$image->merge($image->qrcodeFormatInfomation($formatInfo,QRCodeImage::FORMAT_INFOMATION_DIR_DOWN),new Point($qrImageLength - 8 + 1,8));
-		$image->merge($image->qrcodeFormatInfomation($formatInfo,QRCodeImage::FORMAT_INFOMATION_DIR_LEFT),new Point(8,0));
-		$image->merge($image->qrcodeFormatInfomation($formatInfo,QRCodeImage::FORMAT_INFOMATION_DIR_RIGHT),new Point(8,$qrImageLength - 8));
-		
 		//二维码周围添加2格空白
-		$whiteImage = new QRCodeImage($version);
+		$whiteImage = new QRCodeImage($this->qrCodeObject->version);
 		$whiteImage->createQRCodeImageByLength($whiteImage->getQRCodeImageLength() + 4);
-		$whiteImage->merge($image->toArray(),new Point(2,2));
+		$whiteImage->merge($this->qrCodeMask->toArray(),new Point(2,2));
 		
 		$this->qrCodeObject->qrCodeImage = $whiteImage;
 		unset($whiteImage,$image);

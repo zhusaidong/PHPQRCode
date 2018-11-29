@@ -292,7 +292,7 @@ class QRCodeImage
 		}
 		
 		//保留格式信息区
-		$formatInformation = str_pad('',15,1);
+		$formatInformation = str_pad('',15,0);
 		$this->merge($this->qrcodeFormatInfomation($formatInformation,self::FORMAT_INFOMATION_DIR_UP),new Point(0,8),QRCodeImageType::FORMAT_INFOMATION);
 		$this->merge($this->qrcodeFormatInfomation($formatInformation,self::FORMAT_INFOMATION_DIR_DOWN),new Point($this->qrCodeImageLength - 8 + 1,8),QRCodeImageType::FORMAT_INFOMATION);
 		$this->merge($this->qrcodeFormatInfomation($formatInformation,self::FORMAT_INFOMATION_DIR_LEFT),new Point(8,0),QRCodeImageType::FORMAT_INFOMATION);
