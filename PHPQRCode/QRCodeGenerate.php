@@ -267,9 +267,9 @@ class QRCodeGenerate
 			$bit2 = isset($finalBits[$i + 1]) ? $finalBits[$i + 1] : -1;
 			
 			$point = $dm->getPoint();
-			if(!isset($qrImage[$point->x][$point->y]['type']))
+			if(!isset($qrImage[$point->y][$point->x]['type']))
 			{
-				if($point->y < 0)
+				if($point->x < 0)
 				{
 					break;
 				}
@@ -288,19 +288,29 @@ class QRCodeGenerate
 				$dm->changeDir(DataInMatrix::LEFT);
 				$i--;
 			}
-			elseif($qrImage[$point->x][$point->y]['type'] != QRCodeImageType::DATA)
+			elseif($qrImage[$point->y][$point->x]['type'] != QRCodeImageType::DATA)
 			{
-				while(isset($qrImage[$point->x][$point->y]['type']) and $qrImage[$point->x][$point->y]['type'] != QRCodeImageType::DATA)
+				if($qrImage[$point->y][$point->x - 1]['type'] == QRCodeImageType::DATA)
 				{
+					$qrCodeImage->mergeByCoordinate($bit1,new Point($point->x - 1,$point->y));
 					$dm->changeDir($dir_up ? DataInMatrix::UP : DataInMatrix::DOWN);
-					$point = $dm->getPoint();
+					continue;
+				}
+				else
+				{
+					while(isset($qrImage[$point->y][$point->x]['type']) and $qrImage[$point->y][$point->x]['type'] != QRCodeImageType::DATA)
+					{
+						$dm->changeDir($dir_up ? DataInMatrix::UP : DataInMatrix::DOWN);
+						$point = $dm->getPoint();
+					}
 				}
 				$i--;
+				$bit2 = isset($finalBits[$i + 1]) ? $finalBits[$i + 1] : -1;
 			}
-			elseif($point->y == 4)
+			elseif($point->x == 4)
 			{
 				$dm->changeDir(DataInMatrix::RIGHT);
-				$point->x = 0;
+				$point->y = 0;
 				$dir_up = FALSE;
 				$dm->changeDir(DataInMatrix::DOWN);
 				$i--;
@@ -309,9 +319,9 @@ class QRCodeGenerate
 			else
 			{
 				$qrCodeImage->mergeByCoordinate($bit1,$point);
-				if($bit2 != -1 and isset($qrImage[$point->x][$point->y - 1]['type']) and $qrImage[$point->x][$point->y - 1]['type'] == QRCodeImageType::DATA)
+				if($bit2 != -1 and isset($qrImage[$point->y][$point->x - 1]['type']) and $qrImage[$point->y][$point->x - 1]['type'] == QRCodeImageType::DATA)
 				{
-					$qrCodeImage->mergeByCoordinate($bit2,new Point($point->x,$point->y - 1));
+					$qrCodeImage->mergeByCoordinate($bit2,new Point($point->x - 1,$point->y));
 					$i++;
 				}
 				$dm->changeDir($dir_up ? DataInMatrix::UP : DataInMatrix::DOWN);
@@ -319,7 +329,7 @@ class QRCodeGenerate
 		}
 		
 		//debug
-		//echo $qrCodeImage;exit;
+		//echo $qrCodeImage->toQRCode();exit;
 		
 		return $qrCodeImage;
 	}
@@ -340,6 +350,8 @@ class QRCodeGenerate
 		$whiteImage = new QRCodeImage($this->qrCodeObject->version);
 		$whiteImage->createQRCodeImageByLength($whiteImage->getQRCodeImageLength() + 4);
 		$whiteImage->merge($this->qrCodeMask->toArray(),new Point(2,2));
+		
+		//echo $whiteImage->toQRCode();exit;
 		
 		$this->qrCodeObject->qrCodeImage = $whiteImage;
 		unset($whiteImage,$image);

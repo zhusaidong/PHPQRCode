@@ -32,16 +32,16 @@ class DataInMatrix
 		switch($dir)
 		{
 			case DataInMatrix::LEFT:
-				$this->point->y--;
-				break;
-			case DataInMatrix::RIGHT:
-				$this->point->y++;
-				break;
-			case DataInMatrix::UP:
 				$this->point->x--;
 				break;
-			case DataInMatrix::DOWN:
+			case DataInMatrix::RIGHT:
 				$this->point->x++;
+				break;
+			case DataInMatrix::UP:
+				$this->point->y--;
+				break;
+			case DataInMatrix::DOWN:
+				$this->point->y++;
 				break;
 		}
 		$this->currentDir = $dir;
@@ -63,6 +63,5 @@ class DataInMatrix
 	public function getPoint()
 	{
 		return $this->point;
-	}
-	
+	}	
 }

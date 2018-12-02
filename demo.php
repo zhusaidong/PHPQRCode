@@ -16,7 +16,7 @@ exit;
 $text = isset($_GET['text'])?$_GET['text']:'HELLO WORLD';
 
 $text = 'Hello, world! 123';
-$text = 'http://localhost/PHPQRCode/demo.php';
+$text = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyz';
 
 use PHPQRCode\PHPQRCode,
 	PHPQRCode\ErrorCorrectCodeLevel as ecl;

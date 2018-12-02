@@ -67,11 +67,11 @@ class QRCodeImage
 	{
 		$position = count($blocks);
 		$positions = [];
-		for($i = 0; $i < $position; $i++)
+		for($y = 0; $y < $position; $y++)
 		{
-			for($j = 0; $j < $position; $j++)
+			for($x = 0; $x < $position; $x++)
 			{
-				$positions[$i][$j] = ($i == 0 or $j == 0 or $i == $position - 1 or $j == $position - 1) ? $color : $blocks[$i] * $blocks[$j];
+				$positions[$y][$x] = ($y == 0 or $x == 0 or $y == $position - 1 or $x == $position - 1) ? $color : $blocks[$y] * $blocks[$x];
 			}
 		}
 		return $positions;
@@ -79,7 +79,7 @@ class QRCodeImage
 	/**
 	* 矩阵转置
 	*/
-	private function rotate($arr)
+	public function rotate($arr)
 	{
 		$b = [];
 		foreach($arr as $key => $val)
@@ -208,13 +208,13 @@ class QRCodeImage
 	*/
 	public function createQRCodeImageByLength($qrCodeImageLength)
 	{
-		for($i = 0; $i < $qrCodeImageLength; $i++)
+		for($y = 0; $y < $qrCodeImageLength; $y++)
 		{
-			for($j = 0; $j < $qrCodeImageLength; $j++)
+			for($x = 0; $x < $qrCodeImageLength; $x++)
 			{
-				$this->qrCodeImage[$i][$j] = 
+				$this->qrCodeImage[$y][$x] = 
 				[
-					'point'	=>new Point($i,$j),
+					'point'	=>new Point($x,$y),
 					'bit'	=>0,
 					'type'	=>QRCodeImageType::DATA,
 				];
@@ -277,14 +277,13 @@ class QRCodeImage
 		$this->merge($timing_patterns_horizontal,new Point(0,0),QRCodeImageType::TIMING_PATTERNS);
 		$this->merge($timing_patterns_vertical,new Point(0,0),QRCodeImageType::TIMING_PATTERNS);
 		
-		//dark module-小黑块,坐标:[4 * $version + 9,8]
-		$this->mergeByCoordinate(1,new Point(4 * $version + 9,8),QRCodeImageType::DARK_MODULE);
+		//dark module-小黑块,坐标:[8,4 * $version + 9]
+		$this->mergeByCoordinate(1,new Point(8,4 * $version + 9),QRCodeImageType::DARK_MODULE);
 		
-		//为了正常的进行评估，保留区域都被认定为亮模块。
 		//保留版本信息区:二维码版本7以上包含两个版本信息
 		if($version >= 7)
 		{
-			$versionInfo = str_pad('',18,1);
+			$versionInfo = str_pad('',18,0);
 			$version_infomation_up = $this->qrcodeVersionInfomation($versionInfo);
 			$version_infomation_down = $this->rotate($version_infomation_up);
 			$this->merge($version_infomation_up,new Point(0,$this->qrCodeImageLength - 7 - 1 - 3),QRCodeImageType::VERSION_INFOMATION);
@@ -293,10 +292,10 @@ class QRCodeImage
 		
 		//保留格式信息区
 		$formatInformation = str_pad('',15,0);
-		$this->merge($this->qrcodeFormatInfomation($formatInformation,self::FORMAT_INFOMATION_DIR_UP),new Point(0,8),QRCodeImageType::FORMAT_INFOMATION);
-		$this->merge($this->qrcodeFormatInfomation($formatInformation,self::FORMAT_INFOMATION_DIR_DOWN),new Point($this->qrCodeImageLength - 8 + 1,8),QRCodeImageType::FORMAT_INFOMATION);
-		$this->merge($this->qrcodeFormatInfomation($formatInformation,self::FORMAT_INFOMATION_DIR_LEFT),new Point(8,0),QRCodeImageType::FORMAT_INFOMATION);
-		$this->merge($this->qrcodeFormatInfomation($formatInformation,self::FORMAT_INFOMATION_DIR_RIGHT),new Point(8,$this->qrCodeImageLength - 8),QRCodeImageType::FORMAT_INFOMATION);
+		$this->merge($this->qrcodeFormatInfomation($formatInformation,self::FORMAT_INFOMATION_DIR_UP),new Point(8,0),QRCodeImageType::FORMAT_INFOMATION);
+		$this->merge($this->qrcodeFormatInfomation($formatInformation,self::FORMAT_INFOMATION_DIR_DOWN),new Point(8,$this->qrCodeImageLength - 8 + 1),QRCodeImageType::FORMAT_INFOMATION);
+		$this->merge($this->qrcodeFormatInfomation($formatInformation,self::FORMAT_INFOMATION_DIR_LEFT),new Point(0,8),QRCodeImageType::FORMAT_INFOMATION);
+		$this->merge($this->qrcodeFormatInfomation($formatInformation,self::FORMAT_INFOMATION_DIR_RIGHT),new Point($this->qrCodeImageLength - 8,8),QRCodeImageType::FORMAT_INFOMATION);
 	}	
 	
 	/**
@@ -325,8 +324,8 @@ class QRCodeImage
 	public function mergeByCoordinate($value,Point $point,$qrCodeImageType = NULL)
 	{
 		return $this->merge([
-			$point->x => [
-				$point->y => $value,
+			$point->y => [
+				$point->x => $value,
 			],
 		],new Point(0,0),$qrCodeImageType);
 	}
@@ -340,13 +339,13 @@ class QRCodeImage
 	*/
 	public function merge($array,Point $point,$qrCodeImageType = NULL)
 	{
-		foreach($array as $key => $value)
+		foreach($array as $y => $value)
 		{
-			foreach($value as $kk => $vv)
+			foreach($value as $x => $vv)
 			{
-				$this->qrCodeImage[$point->x + $key][$point->y + $kk]['bit'] = $vv;
+				$this->qrCodeImage[$point->y + $y][$point->x + $x]['bit'] = $vv;
 				if($qrCodeImageType != NULL)
-				$this->qrCodeImage[$point->x + $key][$point->y + $kk]['type'] = $qrCodeImageType;
+				$this->qrCodeImage[$point->y + $y][$point->x + $x]['type'] = $qrCodeImageType;
 			}
 		}
 		return $this;
@@ -389,10 +388,10 @@ class QRCodeImage
 	public function __toString()
 	{
 		$str = '<table style="text-align:center;" border="0" cellpadding="0" cellspacing="0">'."\n";
-		foreach($this->qrCodeImage as $i => $value)
+		foreach($this->qrCodeImage as $y => $value)
 		{
 			$str .= '<tr>'."\n";
-			foreach($value as $j => $v)
+			foreach($value as $x => $v)
 			{
 				$textcolor = '';
 				$bgcolor = '';

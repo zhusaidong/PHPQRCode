@@ -27,10 +27,10 @@ class QRCodeMask
 		
 		//保留格式信息区
 		$formatInfo = (new FormatInformation)->getFormatInformation($errorCorrectionCodeLevel,$mask);
-		$image->merge($image->qrcodeFormatInfomation($formatInfo,QRCodeImage::FORMAT_INFOMATION_DIR_UP),new Point(0,8));
-		$image->merge($image->qrcodeFormatInfomation($formatInfo,QRCodeImage::FORMAT_INFOMATION_DIR_DOWN),new Point($qrImageLength - 8 + 1,8));
-		$image->merge($image->qrcodeFormatInfomation($formatInfo,QRCodeImage::FORMAT_INFOMATION_DIR_LEFT),new Point(8,0));
-		$image->merge($image->qrcodeFormatInfomation($formatInfo,QRCodeImage::FORMAT_INFOMATION_DIR_RIGHT),new Point(8,$qrImageLength - 8));
+		$image->merge($image->qrcodeFormatInfomation($formatInfo,QRCodeImage::FORMAT_INFOMATION_DIR_UP),new Point(8,0),QRCodeImageType::VERSION_INFOMATION);
+		$image->merge($image->qrcodeFormatInfomation($formatInfo,QRCodeImage::FORMAT_INFOMATION_DIR_DOWN),new Point(8,$qrImageLength - 8 + 1),QRCodeImageType::VERSION_INFOMATION);
+		$image->merge($image->qrcodeFormatInfomation($formatInfo,QRCodeImage::FORMAT_INFOMATION_DIR_LEFT),new Point(0,8),QRCodeImageType::VERSION_INFOMATION);
+		$image->merge($image->qrcodeFormatInfomation($formatInfo,QRCodeImage::FORMAT_INFOMATION_DIR_RIGHT),new Point($qrImageLength - 8,8),QRCodeImageType::VERSION_INFOMATION);
 		return $image;
 	}
 	public function setQRCodeImage(QRCodeObject $qRCodeObject,$debug = FALSE)
@@ -162,7 +162,6 @@ class QRCodeMask
 		foreach($qrCodeImageArray as $value)
 		{
 			$values = implode('',$value);
-			
 			$total += substr_count($values,'10111010000');
 			$total += substr_count($values,'00001011101');
 		}

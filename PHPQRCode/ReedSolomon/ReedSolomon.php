@@ -3,6 +3,7 @@
 * Reed-Solomon
 * 	https://github.com/zxing/zxing/tree/master/core/src/main/java/com/google/zxing/common/reedsolomon
 * 	https://github.com/khanamiryan/php-qrcode-detector-decoder/tree/master/lib/Common/Reedsolomon
+* 	https://github.com/chillerlan/php-qrcode/blob/master/src/Data/QRDataAbstract.php
 * @author Zsdroid [635925926@qq.com]
 */
 namespace PHPQRCode\ReedSolomon;
