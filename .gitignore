@@ -1,2 +1,3 @@
-PHPQRCode_clcs.csprj
-PHPQRCode.clpprj
+*.csprj
+*.clpprj
+.idea

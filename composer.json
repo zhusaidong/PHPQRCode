@@ -9,5 +9,12 @@
             "email": "zhusaidong@gmail.com"
         }
     ],
-    "require": {}
+    "require": {
+      "ext-gd": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "PHPQRCode\\": "src/"
+        }
+    }
 }
