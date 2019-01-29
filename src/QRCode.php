@@ -25,8 +25,7 @@ class QRCode
 	public function create($text,$ecl = ErrorCorrectionLevel::L)
 	{
 		$qrObject = new QRObject();
-		$qrObject->setOriginData($text);
-		$qrObject->setErrorCorrectionLevel($ecl);
+		$qrObject->setOriginData($text)->setErrorCorrectionLevel($ecl);
 		
 		return (new QRGenerator())->setQrObject($qrObject)->generator();
 	}
