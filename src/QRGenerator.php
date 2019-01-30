@@ -5,6 +5,7 @@
 
 namespace PHPQRCode;
 
+use PHPQRCode\QRDataSet\DataCapacity;
 use PHPQRCode\QRMode\QRMode;
 
 class QRGenerator
@@ -13,6 +14,7 @@ class QRGenerator
 	 * @var QRObject
 	 */
 	private $qrObject = NULL;
+	private $qrMode;
 	
 	/**
 	 * QRGenerator constructor.
@@ -55,7 +57,7 @@ class QRGenerator
 	 */
 	public function generator($type = QRImageGenerator::PNG,$saveName = NULL)
 	{
-		$this->DataAnalysis()->DataEncodation();exit;
+		$this->DataAnalysis()->DataEncodation();
 		
 		$qrImage = new QRImage();
 		
@@ -70,24 +72,35 @@ class QRGenerator
 	}
 	
 	/**
-	 * Step 1 Data analysis 数据分析
+	 * TODO Step 1 Data analysis 数据分析
 	 */
 	private function DataAnalysis()
 	{
 		$data = $this->qrObject->getOriginData();
 		$this->qrMode = QRMode::getMode($data);
 		//根据数据容量获取二维码版本
-		$this->qrCodeObject->version = (new DataCapacity)->getVersion(strlen($this->qrObject->content),$this->qrCodeObject->errorCorrectionCodeLevel,$this->qrMode->getClassName());
-		$this->qrMode->setVersion($this->qrObject->version);
+		$version = (new DataCapacity)->getVersion(
+			strlen($this->qrObject->getOriginData()),
+			$this->qrObject->getErrorCorrectionLevel(),
+			$this->qrMode->getClassName()
+		);
+		$this->qrObject->setVersion($version);
+		$this->qrMode->setVersion($version);
 		return $this;
 	}
 	/**
-	 * Step 2 Data encodation 数据编码
+	 * TODO Step 2 Data encodation 数据编码
 	 */
 	private function DataEncodation()
 	{
-		$this->qrMode->setMaxBitLength((new ErrorCorrectionCode)->getDataCodeNumber($this->qrObject->version,$this->qrCodeObject->errorCorrectionCodeLevel));
+		/*
+		$this->qrMode->setMaxBitLength(
+			(new ErrorCorrectionCode)->getDataCodeNumber(
+				$this->qrObject->version,$this->qrObject->errorCorrectionCodeLevel
+			)
+		);
 		$this->qrObject->contentBits = $this->qrMode->DataEncodation();
+		*/
 		return $this;
 	}
 }

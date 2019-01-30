@@ -32,6 +32,8 @@ class QRObject
 	 */
 	private $qrImage = null;
 	
+	private $version = 0;
+	
 	/**
 	 * QRObject constructor.
 	 */
@@ -174,6 +176,22 @@ class QRObject
 	{
 		$this->qrImage = $qrImage;
 		return $this;
+	}
+	
+	/**
+	 * @return int
+	 */
+	public function getVersion()
+	{
+		return $this->version;
+	}
+	
+	/**
+	 * @param int $version
+	 */
+	public function setVersion($version)
+	{
+		$this->version = $version;
 	}
 	
 }
